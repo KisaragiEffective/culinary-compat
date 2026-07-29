@@ -17,11 +17,14 @@ import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
 import net.blay09.mods.cookingforblockheads.registry.FoodRecipeType;
 import net.blay09.mods.cookingforblockheads.registry.recipe.FoodRecipe;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -66,6 +69,20 @@ public abstract class RecipeBook {
 			"cooking_pot");
 	@Unique
 	private static final ResourceLocation CULINARYCOMPAT$BAKEWARE = new ResourceLocation("culinarycompat", "bakeware");
+	// pam's tools double as their FD counterparts when kept in the kitchen; pam's
+	// bakeware goes by id since our override drops it from forge:tool_bakeware
+	@Unique
+	private static final ResourceLocation CULINARYCOMPAT$PAM_BAKEWARE = new ResourceLocation("pamhc2foodcore",
+			"bakewareitem");
+	@Unique
+	private static final TagKey<Item> CULINARYCOMPAT$PAM_CUTTINGBOARD = TagKey.create(Registries.ITEM,
+			new ResourceLocation("forge", "tool_cuttingboard"));
+	@Unique
+	private static final TagKey<Item> CULINARYCOMPAT$PAM_SKILLET = TagKey.create(Registries.ITEM,
+			new ResourceLocation("forge", "tool_skillet"));
+	@Unique
+	private static final TagKey<Item> CULINARYCOMPAT$PAM_POT = TagKey.create(Registries.ITEM,
+			new ResourceLocation("forge", "tool_pot"));
 
 	@Redirect(method = "findAndSendItemList", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;keySet()Ljava/util/Set;", remap = false), remap = false, require = 0)
 	private Set<?> culinarycompat$filterKeys(Multimap<ResourceLocation, FoodRecipe> map) {
@@ -194,22 +211,26 @@ public abstract class RecipeBook {
 	@Unique
 	private Set<ResourceLocation> culinarycompat$toolsMissingKeys() {
 		Set<ResourceLocation> tools = new HashSet<>();
-		if (!culinarycompat$kitchenHas(CuttingBoardBlock.class, CULINARYCOMPAT$FD_CUTTING_BOARD)) {
+		if (!culinarycompat$kitchenHas(CuttingBoardBlock.class, CULINARYCOMPAT$FD_CUTTING_BOARD)
+				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_CUTTINGBOARD)) {
 			tools.addAll(FarmersDelight.Cutting.getBridgedOutputs());
 			tools.addAll(Pam.Cutting.getBridgedOutputs());
 			tools.addAll(Croptopia.getKnifeOutputs());
 		}
-		if (!culinarycompat$kitchenHas(SkilletBlock.class, CULINARYCOMPAT$FD_SKILLET)) {
+		if (!culinarycompat$kitchenHas(SkilletBlock.class, CULINARYCOMPAT$FD_SKILLET)
+				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_SKILLET)) {
 			tools.addAll(Pam.Skillet.getBridgedOutputs());
 			tools.addAll(Croptopia.getFryingPanOutputs());
 		}
-		if (!culinarycompat$kitchenHas(CookingPotBlock.class, CULINARYCOMPAT$FD_COOKING_POT)) {
+		if (!culinarycompat$kitchenHas(CookingPotBlock.class, CULINARYCOMPAT$FD_COOKING_POT)
+				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_POT)) {
 			tools.addAll(Pam.Pot.getBridgedOutputs());
 			tools.addAll(FarmersDelight.Pot.getBridgedOutputs());
 			tools.addAll(Croptopia.getCookingPotOutputs());
 		}
 		if (!culinarycompat$memberPresent(CULINARYCOMPAT$BAKEWARE)
-				&& !culinarycompat$kitchenHasItem(CULINARYCOMPAT$BAKEWARE)) {
+				&& !culinarycompat$kitchenHasItem(CULINARYCOMPAT$BAKEWARE)
+				&& !culinarycompat$kitchenHasItem(CULINARYCOMPAT$PAM_BAKEWARE)) {
 			tools.addAll(Pam.Bakeware.getBridgedOutputs());
 			tools.addAll(Croptopia.getBakewareOutputs());
 		}
@@ -220,6 +241,24 @@ public abstract class RecipeBook {
 			tools.addAll(Croptopia.getMortarOutputs());
 		}
 		return tools;
+	}
+
+	@Unique
+	private boolean culinarycompat$kitchenHasTagged(TagKey<Item> tag) {
+		if (multiBlock == null)
+			return false;
+		List<IKitchenItemProvider> providers = ((CFB.KitchenMemberView) multiBlock)
+				.culinarycompat$getKitchenItemProviders();
+		for (IKitchenItemProvider provider : providers) {
+			int slots = provider.getSlots();
+			for (int i = 0; i < slots; i++) {
+				ItemStack stack = provider.getStackInSlot(i);
+				if (!stack.isEmpty() && stack.is(tag)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Unique

@@ -35,6 +35,7 @@ import net.minecraftforge.registries.tags.ITag;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
+import io.github.smokahs.culinarycompat.config.Configs;
 import io.github.smokahs.culinarycompat.registry.Items;
 import io.github.smokahs.culinarycompat.registry.Recipes;
 
@@ -612,9 +613,10 @@ public final class Pam {
 	}
 
 	public static final class CreativeTabFilter {
-		private static final ResourceLocation[] HIDDEN_ITEMS = {Cutting.cuttingboardItemId(), Skillet.skilletItemId(),
-				Pot.potItemId(), new ResourceLocation(PAM_MODID, "bakewareitem"),
-				new ResourceLocation(PAM_MODID, "doughitem")};
+		// pam dough dupes the FD one, stays hidden either way
+		private static final ResourceLocation[] HIDDEN_ITEMS = {new ResourceLocation(PAM_MODID, "doughitem")};
+		private static final ResourceLocation[] TOOL_ITEMS = {Cutting.cuttingboardItemId(), Skillet.skilletItemId(),
+				Pot.potItemId(), Bakeware.PAM_BAKEWARE_ITEM_ID};
 
 		private CreativeTabFilter() {
 		}
@@ -626,6 +628,13 @@ public final class Pam {
 				Item it = ForgeRegistries.ITEMS.getValue(id);
 				if (it != null)
 					hidden.add(it);
+			}
+			if (!Configs.Common.restorePamsTools) {
+				for (ResourceLocation id : TOOL_ITEMS) {
+					Item it = ForgeRegistries.ITEMS.getValue(id);
+					if (it != null)
+						hidden.add(it);
+				}
 			}
 			if (hidden.isEmpty())
 				return;
@@ -651,9 +660,9 @@ public final class Pam {
 		private static final TagKey<Item> BK_TAG = TagKey.create(Registries.ITEM,
 				new ResourceLocation("forge", "tool_bakeware"));
 
-		private static final ResourceLocation CB_RECIPE_ID = new ResourceLocation(PAM_MODID, "cuttingboarditem");
-		private static final ResourceLocation SK_RECIPE_ID = new ResourceLocation(PAM_MODID, "skilletitem");
-		private static final ResourceLocation PT_RECIPE_ID = new ResourceLocation(PAM_MODID, "potitem");
+		private static final ResourceLocation CB_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_cuttingboard");
+		private static final ResourceLocation SK_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_skillet");
+		private static final ResourceLocation PT_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_pot");
 		private static final ResourceLocation BK_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_bakeware");
 
 		private RecipeStripper() {
@@ -710,7 +719,9 @@ public final class Pam {
 				ResourceLocation rid = recipe.getId();
 				if (CB_RECIPE_ID.equals(rid) || SK_RECIPE_ID.equals(rid) || PT_RECIPE_ID.equals(rid)
 						|| BK_RECIPE_ID.equals(rid)) {
-					toStrip.add(rid);
+					if (!Configs.Common.restorePamsTools) {
+						toStrip.add(rid);
+					}
 					continue;
 				}
 				if (recipe.getType() != RecipeType.CRAFTING) {
@@ -780,23 +791,32 @@ public final class Pam {
 				if (stacks.length == 0) {
 					continue;
 				}
-				for (ItemStack stack : stacks) {
-					Item it = stack.getItem();
-					if (cb.contains(it)) {
-						return 1;
-					}
-					if (sk.contains(it)) {
-						return 2;
-					}
-					if (pt.contains(it)) {
-						return 3;
-					}
-					if (bk.contains(it)) {
-						return 4;
-					}
+				if (resolvesTo(stacks, cb)) {
+					return 1;
+				}
+				if (resolvesTo(stacks, sk)) {
+					return 2;
+				}
+				if (resolvesTo(stacks, pt)) {
+					return 3;
+				}
+				if (resolvesTo(stacks, bk)) {
+					return 4;
 				}
 			}
 			return 0;
+		}
+
+		// the whole ingredient must be the pam tool: a wider tag like
+		// forge:tools/knives
+		// belongs to someone else's recipe, not a pam one
+		private static boolean resolvesTo(ItemStack[] stacks, Set<Item> tools) {
+			for (ItemStack stack : stacks) {
+				if (!tools.contains(stack.getItem())) {
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 }

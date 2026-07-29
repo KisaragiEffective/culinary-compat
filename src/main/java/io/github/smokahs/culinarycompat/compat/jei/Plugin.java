@@ -23,6 +23,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
 import io.github.smokahs.culinarycompat.compat.cfb.FarmersDelight;
+import io.github.smokahs.culinarycompat.config.Configs;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -43,10 +44,13 @@ public final class Plugin implements IModPlugin {
 	private static IJeiRuntime runtime;
 	private static int registeredBridgeCount;
 
+	// only hidden while the Pam tool gating is on (restorePamsTools off)
+	private static final String[] PAM_GATED_HIDDEN = {"pamhc2foodcore:bakewareitem"};
+
 	private static final String[] HIDDEN = {"pamhc2crops:tomatoitem", "pamhc2crops:tomatoseeditem",
 			"pamhc2crops:onionitem", "pamhc2crops:onionseeditem", "pamhc2crops:cabbageitem",
 			"pamhc2crops:cabbageseeditem", "pamhc2crops:riceitem", "pamhc2crops:riceseeditem",
-			"pamhc2foodcore:bakewareitem", "pamhc2foodcore:doughitem",
+			"pamhc2foodcore:doughitem",
 			// croptopia tomato/onion/rice/cabbage + seeds are replaced by FD equivalents
 			// (loot + tags); hide them
 			"croptopia:tomato", "croptopia:tomato_seed", "croptopia:onion", "croptopia:onion_seed", "croptopia:cabbage",
@@ -205,8 +209,12 @@ public final class Plugin implements IModPlugin {
 		Plugin.runtime = runtime;
 		if (emiLoaded())
 			return;
-		List<ItemStack> hide = new ArrayList<>(HIDDEN.length);
-		for (String id : HIDDEN) {
+		List<String> hiddenIds = new ArrayList<>(List.of(HIDDEN));
+		if (!Configs.Common.restorePamsTools) {
+			hiddenIds.addAll(List.of(PAM_GATED_HIDDEN));
+		}
+		List<ItemStack> hide = new ArrayList<>(hiddenIds.size());
+		for (String id : hiddenIds) {
 			ResourceLocation rl = ResourceLocation.tryParse(id);
 			if (rl == null)
 				continue;

@@ -35,6 +35,8 @@ public final class Configs {
 		private static final ForgeConfigSpec.BooleanValue OP_NETHERITE_KNIFE;
 		private static final ForgeConfigSpec.BooleanValue MULTI_CUTTING;
 
+		private static final ForgeConfigSpec.BooleanValue RESTORE_PAMS_TOOLS;
+
 		private static final ForgeConfigSpec.BooleanValue NOTIFY_MISSING_DEPS;
 
 		static {
@@ -75,6 +77,15 @@ public final class Configs {
 					.translation("culinarycompat.config.multiCutting").define("multiCutting", true);
 			BUILDER.pop();
 
+			BUILDER.comment("Pam's HarvestCraft 2 integration. Requires restart to take effect.")
+					.push("pamsHarvestCraft");
+			RESTORE_PAMS_TOOLS = BUILDER.comment(
+					"put Pam's kitchen tools (cutting board, skillet, pot, bakeware) and their crafting recipes back in the game.",
+					"they work alongside the Farmer's Delight equivalents: the cutting board counts as a knife, and any of them",
+					"kept in the kitchen satisfies its Farmer's Delight counterpart. Pam's food recipes stay in the kitchen either way.")
+					.translation("culinarycompat.config.restorePamsTools").define("restorePamsTools", false);
+			BUILDER.pop();
+
 			BUILDER.comment("Chat notifications.").push("notifications");
 			NOTIFY_MISSING_DEPS = BUILDER
 					.comment("show a chat message on login when certain optional dependencies are missing.")
@@ -96,6 +107,8 @@ public final class Configs {
 		public static boolean opNetheriteKnife;
 		public static boolean multiCutting;
 
+		public static boolean restorePamsTools;
+
 		public static boolean notifyMissingDeps;
 
 		private Common() {
@@ -111,6 +124,7 @@ public final class Configs {
 			bakewareRefundOnCancel = BAKEWARE_REFUND_ON_CANCEL.get();
 			opNetheriteKnife = OP_NETHERITE_KNIFE.get();
 			multiCutting = MULTI_CUTTING.get();
+			restorePamsTools = RESTORE_PAMS_TOOLS.get();
 			notifyMissingDeps = NOTIFY_MISSING_DEPS.get();
 		}
 	}

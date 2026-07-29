@@ -1,7 +1,9 @@
 package io.github.smokahs.culinarycompat.compat.emi;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,16 +25,20 @@ import dev.emi.emi.api.stack.EmiStack;
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
 import io.github.smokahs.culinarycompat.compat.cfb.FarmersDelight;
+import io.github.smokahs.culinarycompat.config.Configs;
 
 @EmiEntrypoint
 @OnlyIn(Dist.CLIENT)
 public final class Plugin implements EmiPlugin {
 	public static final Map<Bridges.Kind, EmiRecipeCategory> CATEGORIES = new EnumMap<>(Bridges.Kind.class);
 
+	// only hidden while the Pam tool gating is on (restorePamsTools off)
+	private static final String[] PAM_GATED_HIDDEN = {"pamhc2foodcore:bakewareitem"};
+
 	private static final String[] HIDDEN = {"pamhc2crops:tomatoitem", "pamhc2crops:tomatoseeditem",
 			"pamhc2crops:onionitem", "pamhc2crops:onionseeditem", "pamhc2crops:cabbageitem",
 			"pamhc2crops:cabbageseeditem", "pamhc2crops:riceitem", "pamhc2crops:riceseeditem",
-			"pamhc2foodcore:bakewareitem", "pamhc2foodcore:doughitem",
+			"pamhc2foodcore:doughitem",
 			// croptopia tomato/onion/rice/cabbage + seeds are replaced by FD equivalents
 			// (loot + tags); hide them
 			"croptopia:tomato", "croptopia:tomato_seed", "croptopia:onion", "croptopia:onion_seed", "croptopia:cabbage",
@@ -96,8 +102,12 @@ public final class Plugin implements EmiPlugin {
 	}
 
 	private static void hideStacks(EmiRegistry registry) {
+		List<String> hiddenIds = new ArrayList<>(List.of(HIDDEN));
+		if (!Configs.Common.restorePamsTools) {
+			hiddenIds.addAll(List.of(PAM_GATED_HIDDEN));
+		}
 		Set<Item> hidden = new HashSet<>();
-		for (String id : HIDDEN) {
+		for (String id : hiddenIds) {
 			ResourceLocation rl = ResourceLocation.tryParse(id);
 			if (rl == null)
 				continue;
