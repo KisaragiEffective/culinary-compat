@@ -17,9 +17,10 @@ credits="Pam, vectorwing, BlayTheNinth, Pixel_1101, ItsSebastrn, ACCBDD (Farmer'
 description='''${mod_description}'''
 
 [[dependencies.culinarycompat]]
+    # NeoForge 1.20.1 still exposes the legacy "forge" mod ID.
     modId="forge"
     mandatory=true
-    versionRange="${forge_version_range}"
+    versionRange="${neoforge_version_range}"
     ordering="NONE"
     side="BOTH"
 

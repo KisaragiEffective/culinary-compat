@@ -1,8 +1,16 @@
+buildscript {
+    configurations.classpath {
+        // Librarian also requests upstream ForgeGradle, which shares classes
+        // with the NeoForge 1.20.1 plugin and must not be loaded alongside it.
+        exclude group: 'net.minecraftforge.gradle', module: 'ForgeGradle'
+    }
+}
+
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.neoforged.gradle' version '6.0.21'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
     id 'com.diffplug.spotless' version '6.25.0'
@@ -80,6 +88,10 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
+    maven {
         name = 'CurseMaven'
         url = 'https://www.cursemaven.com'
         content {
@@ -89,7 +101,8 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // NeoForge 1.20.1 uses the legacy Forge API namespace.
+    minecraft "net.neoforged:forge:${minecraft_version}-${neoforge_version}"
 
     compileOnly fg.deobf("curse.maven:farmers-delight-398521:7801523")
     compileOnly fg.deobf("curse.maven:pamhc2foodcore-372534:5097798")
@@ -115,7 +128,7 @@ dependencies {
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            neoforge_version: neoforge_version, neoforge_version_range: neoforge_version_range,
             loader_version_range: loader_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors: mod_authors, mod_description: mod_description,

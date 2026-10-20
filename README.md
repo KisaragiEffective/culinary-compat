@@ -3,14 +3,20 @@
 </p>
 
 # Culinary Compat!
-<a href='https://files.minecraftforge.net'><img alt="forge" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg"></a>
+[![NeoForge](https://img.shields.io/badge/NeoForge-1.20.1-orange)](https://neoforged.net/)
 
 The ultimate culinary compatibility mod! Bridging the culinary gaps between mods like Farmers Delight (+ addons) and Cooking for Blockheads, the Pam's mods, Croptopia, AE2, & many others with additions, bug fixes, & more! A must-have mod for culinary connoisseurs!
 
-Minecraft 1.20.1, Forge 47+, MIT.
+Minecraft 1.20.1, NeoForge 47.1.106, MIT.
 
   [![CurseForge Version](https://img.shields.io/curseforge/v/1516050?label=CurseForge&color=orange&logo=curseforge&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/culinary-compat)
   [![Modrinth Version](https://img.shields.io/modrinth/v/culinary-compat?label=Modrinth&color=00AF5C&logo=modrinth&style=for-the-badge)](https://modrinth.com/mod/culinary-compat)
+
+## Development
+
+Use JDK 17 and run `./gradlew build`. Development runs are available through `./gradlew runClient` and `./gradlew runServer`.
+
+NeoForge 1.20.1 retains the `net.minecraftforge` Java packages, `forge` mod ID and data tags, and `META-INF/mods.toml`. The build uses the NeoForge Gradle plugin with the `net.neoforged:forge` artifact. The optional integrations use their Minecraft 1.20.1 Forge artifacts; choose versions compatible with NeoForge 47.1.106 when installing them.
 
 ## Changelog
 
@@ -85,7 +91,7 @@ Client and server config files are included, covering things like the bakeware t
 --------------------------------------
 ## Installation
 
-Drop `culinarycompat-<version>.jar` into `mods/`. All integrations are soft dependencies, runs cleanly with any subset. INTENDED TO BE USED WITH ALL OF THE FOLLOWING:
+Install NeoForge 47.1.106 for Minecraft 1.20.1, then drop `culinarycompat-<version>.jar` into `mods/`. All integrations are soft dependencies, runs cleanly with any subset. INTENDED TO BE USED WITH ALL OF THE FOLLOWING:
 
 [Pam's HC2 Food Core](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-food-core), [Food Extended](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-food-extended), [Crops](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-crops), [Trees](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-trees), [Farmer's Delight](https://www.curseforge.com/minecraft/mc-mods/farmers-delight), [Cooking for Blockheads](https://www.curseforge.com/minecraft/mc-mods/cooking-for-blockheads).
 
@@ -101,4 +107,4 @@ This mod wouldn't exist without: Pam (Pam's HarvestCraft 2), vectorwing (Farmer'
 
 ## Issues
 
-[GitHub issue tracker](https://github.com/smokahs/Culinary-Compat/issues). Include MC+Forge version, Culinary Compat version, installed mod subset, crash log (if applicable), and `logs/latest.log`.
+[GitHub issue tracker](https://github.com/smokahs/Culinary-Compat/issues). Include MC+NeoForge version, Culinary Compat version, installed mod subset, crash log (if applicable), and `logs/latest.log`.
