@@ -71,6 +71,14 @@ public final class Recipes {
 				RecipeIds.remember(id, this);
 		}
 		@Override
+		public boolean matches(CraftingInput input, net.minecraft.world.level.Level level) {
+			return false;
+		}
+		@Override
+		public boolean isSpecial() {
+			return true;
+		}
+		@Override
 		public RecipeSerializer<?> getSerializer() {
 			return BRIDGE_SHAPELESS_SERIALIZER.get();
 		}
@@ -96,6 +104,14 @@ public final class Recipes {
 					result);
 			if (id != null)
 				RecipeIds.remember(id, this);
+		}
+		@Override
+		public boolean matches(CraftingInput input, net.minecraft.world.level.Level level) {
+			return false;
+		}
+		@Override
+		public boolean isSpecial() {
+			return true;
 		}
 		@Override
 		public RecipeSerializer<?> getSerializer() {
