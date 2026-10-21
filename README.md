@@ -3,20 +3,22 @@
 </p>
 
 # Culinary Compat!
-[![NeoForge](https://img.shields.io/badge/NeoForge-1.20.1-orange)](https://neoforged.net/)
+[![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1-orange)](https://neoforged.net/)
 
 The ultimate culinary compatibility mod! Bridging the culinary gaps between mods like Farmers Delight (+ addons) and Cooking for Blockheads, the Pam's mods, Croptopia, AE2, & many others with additions, bug fixes, & more! A must-have mod for culinary connoisseurs!
 
-Minecraft 1.20.1, NeoForge 47.1.106, MIT.
+Minecraft 1.21.1, NeoForge 21.1.264, MIT.
 
   [![CurseForge Version](https://img.shields.io/curseforge/v/1516050?label=CurseForge&color=orange&logo=curseforge&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/culinary-compat)
   [![Modrinth Version](https://img.shields.io/modrinth/v/culinary-compat?label=Modrinth&color=00AF5C&logo=modrinth&style=for-the-badge)](https://modrinth.com/mod/culinary-compat)
 
 ## Development
 
-Use JDK 17 and run `./gradlew build`. Development runs are available through `./gradlew runClient` and `./gradlew runServer`.
+Use JDK 21 and run `./gradlew build`. Development runs are available through `./gradlew runClient` and `./gradlew runServer`.
 
-NeoForge 1.20.1 retains the `net.minecraftforge` Java packages, `forge` mod ID and data tags, and `META-INF/mods.toml`. The build uses the NeoForge Gradle plugin with the `net.neoforged:forge` artifact. The optional integrations use their Minecraft 1.20.1 Forge artifacts; choose versions compatible with NeoForge 47.1.106 when installing them.
+The build uses ModDevGradle, Java 21, and NeoForge 21.1.264. All integration dependencies target Minecraft 1.21.1 / NeoForge. Run `./gradlew runGameTestServer -PgameTests` for the standalone tests, or add `-PcompatTest` to exercise the main food and kitchen integrations. Food rebalancing uses default data components and is loaded from the startup config `culinarycompat-common.toml`; restart after changing it.
+
+Porting references: [Minecraft and NeoForge migration primers](https://docs.neoforged.net/primer/docs/), especially the [1.20.5 data component changes](https://docs.neoforged.net/primer/docs/1.20.5/) and [1.21 recipe and resource changes](https://docs.neoforged.net/primer/docs/1.21/).
 
 ## Changelog
 
@@ -68,7 +70,7 @@ Client and server config files are included, covering things like the bakeware t
     - Storage Delight
     - Ender's Delight
     - End's Delight
-    - Nether's Delight
+    - My Nether's Delight (the 1.21.1 successor to Nether's Delight)
     - Twilight's Flavor and Delight
 </details>
 
@@ -85,13 +87,13 @@ Client and server config files are included, covering things like the bakeware t
 </details>
 
 ### Integrations:
-- Supports Farmer's Delight 1.3.1 and 1.3.2
+- Supports Farmer's Delight 1.3.4 for NeoForge 1.21.1
 - Fixes crashes from multiple addons that reference outdated (pre 1.3.1) Farmers Delight methods 
 
 --------------------------------------
 ## Installation
 
-Install NeoForge 47.1.106 for Minecraft 1.20.1, then drop `culinarycompat-<version>.jar` into `mods/`. All integrations are soft dependencies, runs cleanly with any subset. INTENDED TO BE USED WITH ALL OF THE FOLLOWING:
+Install NeoForge 21.1.264 for Minecraft 1.21.1, then drop `culinarycompat-<version>.jar` into `mods/`. All integrations are soft dependencies, runs cleanly with any subset. INTENDED TO BE USED WITH ALL OF THE FOLLOWING:
 
 [Pam's HC2 Food Core](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-food-core), [Food Extended](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-food-extended), [Crops](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-crops), [Trees](https://www.curseforge.com/minecraft/mc-mods/pams-harvestcraft-2-trees), [Farmer's Delight](https://www.curseforge.com/minecraft/mc-mods/farmers-delight), [Cooking for Blockheads](https://www.curseforge.com/minecraft/mc-mods/cooking-for-blockheads).
 
