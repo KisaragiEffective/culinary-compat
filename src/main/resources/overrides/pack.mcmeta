@@ -2,5 +2,10 @@
   "pack": {
     "pack_format": 34,
     "description": "Culinary Compat overrides (high-priority)"
+  },
+  "filter": {
+    "block": [
+      {"namespace": "minecraft", "path": "tags/item/rabbit_food\\.json"}
+    ]
   }
 }
