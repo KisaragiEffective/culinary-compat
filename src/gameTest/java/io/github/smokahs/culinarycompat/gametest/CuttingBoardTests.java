@@ -1,5 +1,8 @@
 package io.github.smokahs.culinarycompat.gametest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -45,6 +48,24 @@ public final class CuttingBoardTests {
 
 	private static ItemStackHandler extras(CuttingBoardBlockEntity board) {
 		return ((MultiCuttingExtras) board).culinarycompat$getExtras();
+	}
+
+	private static List<ItemStack> storedItems(CuttingBoardBlockEntity board) {
+		var items = new ArrayList<ItemStack>();
+		items.add(board.getInventory().getStackInSlot(0).copy());
+		for (int i = 0; i < extras(board).getSlots(); i++) {
+			items.add(extras(board).getStackInSlot(i).copy());
+		}
+		return items;
+	}
+
+	private static void assertStoredItemsUnchanged(GameTestHelper helper, CuttingBoardBlockEntity board,
+			List<ItemStack> expected, String context) {
+		var actual = storedItems(board);
+		for (int i = 0; i < expected.size(); i++) {
+			helper.assertTrue(ItemStack.isSameItemSameTags(actual.get(i), expected.get(i))
+					&& actual.get(i).getCount() == expected.get(i).getCount(), context + " at board slot " + i);
+		}
 	}
 
 	private static InteractionResult use(GameTestHelper helper, Player player, InteractionHand hand) {
@@ -124,8 +145,16 @@ public final class CuttingBoardTests {
 					"Creative insertion keeps held count");
 			for (int i = 2; i < extras(board).getSlots(); i++)
 				extras(board).setStackInSlot(i, new ItemStack(Items.DIRT));
+			player.getAbilities().instabuild = false;
+			player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE, 3));
+			var fullBoard = storedItems(board);
+			var heldBefore = player.getMainHandItem().copy();
 			use(helper, player, InteractionHand.MAIN_HAND);
-			helper.assertTrue(player.getMainHandItem().getCount() == 2, "Full board must not consume held item");
+			helper.assertTrue(
+					ItemStack.isSameItemSameTags(player.getMainHandItem(), heldBefore)
+							&& player.getMainHandItem().getCount() == heldBefore.getCount(),
+					"Full board must not consume or replace the survival player's held item");
+			assertStoredItemsUnchanged(helper, board, fullBoard, "Full board use must preserve every stored item");
 			Configs.Common.multiCutting = false;
 			extras(board).setStackInSlot(0, ItemStack.EMPTY);
 			use(helper, player, InteractionHand.MAIN_HAND);
@@ -153,10 +182,14 @@ public final class CuttingBoardTests {
 				"Survival pickup returns all ingredients");
 		add(board, new ItemStack(Items.CARROT));
 		extras(board).setStackInSlot(0, new ItemStack(Items.APPLE));
-		player.setShiftKeyDown(false);
-		player.setPose(net.minecraft.world.entity.Pose.STANDING);
+		// FD's native use reads mainhand even for offhand calls. Keep it nonempty
+		// and non-tool so this assertion isolates the bulk-removal hand guard.
+		player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE));
+		player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+		var beforeOffhand = storedItems(board);
 		use(helper, player, InteractionHand.OFF_HAND);
-		helper.assertTrue(!board.isEmpty(), "Empty offhand must not bulk-empty board");
+		assertStoredItemsUnchanged(helper, board, beforeOffhand,
+				"Crouching empty offhand must preserve every base and extra item");
 		helper.succeed();
 	}
 
