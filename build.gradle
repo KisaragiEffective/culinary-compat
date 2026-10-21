@@ -19,6 +19,35 @@ sourceSets {
     }
 }
 
+tasks.named('compileGameTestJava', JavaCompile).configure {
+    options.compilerArgs += ['-proc:none']
+}
+
+// Generate a deterministic empty structure without shipping test assets in main.
+tasks.named('processGameTestResources').configure {
+    exclude 'data/culinarycompat/structure/empty.nbt'
+    doLast {
+        def target = new File(destinationDir, 'data/culinarycompat/structure/empty.nbt')
+        target.parentFile.mkdirs()
+        new DataOutputStream(new java.util.zip.GZIPOutputStream(new FileOutputStream(target))).withCloseable { out ->
+            out.writeByte(10); out.writeUTF('')
+            out.writeByte(3); out.writeUTF('DataVersion'); out.writeInt(3955)
+            out.writeByte(9); out.writeUTF('size'); out.writeByte(3); out.writeInt(3)
+            3.times { out.writeInt(5) }
+            out.writeByte(9); out.writeUTF('palette'); out.writeByte(10); out.writeInt(1)
+            out.writeByte(8); out.writeUTF('Name'); out.writeUTF('minecraft:air'); out.writeByte(0)
+            ['blocks', 'entities'].each { name ->
+                out.writeByte(9); out.writeUTF(name); out.writeByte(10); out.writeInt(0)
+            }
+            out.writeByte(0)
+        }
+    }
+}
+configurations {
+    gameTestImplementation.extendsFrom implementation, compileOnly
+    gameTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 spotless {
     java {
         target 'src/main/java/**/*.java', 'src/gameTest/java/**/*.java'
@@ -40,6 +69,8 @@ neoForge {
         }
         gameTestServer {
             type = 'gameTestServer'
+            sourceSet = sourceSets.gameTest
+            gameDirectory = project.file('run-gametest')
         }
         data {
             data()
@@ -76,6 +107,12 @@ repositories {
 }
 
 dependencies {
+    // These integrations are required by the block tests; missing mods must fail
+    // the run rather than turn coverage into silently skipped tests.
+    gameTestRuntimeOnly 'maven.modrinth:farmers-delight:XTVZDOol'
+    gameTestRuntimeOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'
+    gameTestRuntimeOnly 'maven.modrinth:balm:CquiaiDj'
+    gameTestRuntimeOnly 'maven.modrinth:ae2:KDnFUmMm'
     // All artifacts below target Minecraft 1.21.1 and NeoForge. They remain optional.
     compileOnly 'maven.modrinth:farmers-delight:XTVZDOol'
     compileOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'

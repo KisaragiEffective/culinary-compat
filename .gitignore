@@ -21,6 +21,7 @@ build
 eclipse
 run
 run-data
+run-gametest
 .vscode
 src/generated/
 src/test/
