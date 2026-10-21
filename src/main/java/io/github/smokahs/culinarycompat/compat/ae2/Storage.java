@@ -85,8 +85,6 @@ public final class Storage implements MEStorage {
 	public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
 		if (!station.getMode().allowsCFBToAE() || !(what instanceof AEItemKey key) || amount <= 0)
 			return 0;
-		if (mode == Actionable.SIMULATE)
-			return amount;
 		long inserted = 0;
 		for (var inventory : inventories()) {
 			for (int slot = 0; slot < inventory.getSlots() && inserted < amount; slot++) {
