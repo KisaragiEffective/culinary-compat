@@ -6,7 +6,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID)
 public final class Configs {
 	private Configs() {
 	}

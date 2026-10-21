@@ -11,7 +11,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.compat.ae2.Bridge;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID)
 public final class CreativeTab {
 	private static final ResourceLocation CROPTOPIA_KNIFE = ResourceLocation.fromNamespaceAndPath("croptopia", "knife");
 

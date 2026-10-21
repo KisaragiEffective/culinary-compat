@@ -34,7 +34,7 @@ import vectorwing.farmersdelight.common.block.CookingPotBlock;
 import vectorwing.farmersdelight.common.block.CuttingBoardBlock;
 import vectorwing.farmersdelight.common.block.SkilletBlock;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, value = Dist.CLIENT)
 public final class ModelOffsets {
 	static final ModelProperty<Boolean> OFFSET_APPLIES = new ModelProperty<>();
 

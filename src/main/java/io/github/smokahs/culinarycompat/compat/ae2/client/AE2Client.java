@@ -8,7 +8,7 @@ import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.compat.ae2.Bridge;
 
 // client-only registration for the ME station menu screen
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, value = Dist.CLIENT)
 public final class AE2Client {
 
 	private AE2Client() {
