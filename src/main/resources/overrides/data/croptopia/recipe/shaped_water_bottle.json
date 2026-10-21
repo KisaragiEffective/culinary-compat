@@ -2,14 +2,30 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    { "item": "minecraft:water_bucket" },
-    { "item": "minecraft:glass_bottle" },
-    { "item": "minecraft:glass_bottle" },
-    { "item": "minecraft:glass_bottle" },
-    { "item": "minecraft:glass_bottle" }
+    {
+      "item": "minecraft:water_bucket"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
   ],
   "result": {
-    "item": "croptopia:water_bottle",
+    "id": "croptopia:water_bottle",
     "count": 4
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ]
 }

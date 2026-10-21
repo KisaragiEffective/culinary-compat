@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "croptopia:turnip_seed"
+      "id": "croptopia:turnip_seed"
     },
     "title": {
       "translate": "advancements.croptopia.gather_all.title"
@@ -661,5 +661,15 @@
         ]
       }
     }
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

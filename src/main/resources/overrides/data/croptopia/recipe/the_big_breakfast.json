@@ -2,13 +2,27 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "1": { "item": "minecraft:egg" },
-    "2": { "item": "farmersdelight:bacon" },
-    "3": { "item": "croptopia:hashed_brown" },
-    "4": { "item": "croptopia:baked_beans" },
-    "5": { "tag": "c:sausages" },
-    "6": { "item": "croptopia:toast" },
-    "7": { "item": "croptopia:frying_pan" }
+    "1": {
+      "item": "minecraft:egg"
+    },
+    "2": {
+      "item": "farmersdelight:bacon"
+    },
+    "3": {
+      "item": "croptopia:hashed_brown"
+    },
+    "4": {
+      "item": "croptopia:baked_beans"
+    },
+    "5": {
+      "tag": "c:sausages"
+    },
+    "6": {
+      "item": "croptopia:toast"
+    },
+    "7": {
+      "item": "croptopia:frying_pan"
+    }
   },
   "pattern": [
     "123",
@@ -16,7 +30,17 @@
     " 45"
   ],
   "result": {
-    "item": "croptopia:the_big_breakfast"
+    "id": "croptopia:the_big_breakfast"
   },
-  "show_notification": true
+  "show_notification": true,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

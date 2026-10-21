@@ -1,9 +1,4 @@
 {
-  "conditions": [
-    {
-      "type": "c:false"
-    }
-  ],
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
@@ -33,7 +28,16 @@
   ],
   "result": {
     "count": 2,
-    "item": "croptopia:cabbage_roll"
+    "id": "croptopia:cabbage_roll"
   },
-  "show_notification": true
+  "show_notification": true,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ]
 }

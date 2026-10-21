@@ -18,7 +18,17 @@
     "444"
   ],
   "result": {
-    "item": "croptopia:nether_star_cake"
+    "id": "croptopia:nether_star_cake"
   },
-  "show_notification": true
+  "show_notification": true,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

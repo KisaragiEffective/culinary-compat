@@ -1,27 +1,27 @@
 {
-	"type": "farmersdelight:cooking",
-	"conditions": [
-		{
-			"type": "c:mod_loaded",
-			"modid": "croptopia"
-		},
-		{
-			"type": "c:mod_loaded",
-			"modid": "farmersdelight"
-		}
-	],
-	"cookingtime": 200,
-	"experience": 0.8,
-	"ingredients": [
-		{
-			"tag": "c:milks"
-		},
-		{
-			"tag": "c:salts"
-		}
-	],
-	"result": {
-		"item": "croptopia:butter",
-		"count": 1
-	}
+  "type": "farmersdelight:cooking",
+  "cookingtime": 200,
+  "experience": 0.8,
+  "ingredients": [
+    {
+      "tag": "c:milks"
+    },
+    {
+      "tag": "c:salts"
+    }
+  ],
+  "result": {
+    "id": "croptopia:butter",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

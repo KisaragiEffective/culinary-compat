@@ -1,8 +1,4 @@
 {
-  "conditions": [
-    {"type": "c:mod_loaded", "modid": "ae2"},
-    {"type": "c:mod_loaded", "modid": "cookingforblockheads"}
-  ],
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "abc",
@@ -10,16 +6,42 @@
     "gfh"
   ],
   "key": {
-    "a": {"item": "cookingforblockheads:toaster"},
-    "b": {"item": "ae2:chest"},
-    "c": {"item": "cookingforblockheads:milk_jar"},
-    "d": {"item": "ae2:fluix_glass_cable"},
-    "e": {"item": "ae2:cell_component_16k"},
-    "f": {"item": "ae2:engineering_processor"},
-    "g": {"item": "cookingforblockheads:crafting_book"},
-    "h": {"item": "cookingforblockheads:no_filter_edition"}
+    "a": {
+      "item": "cookingforblockheads:toaster"
+    },
+    "b": {
+      "item": "ae2:chest"
+    },
+    "c": {
+      "item": "cookingforblockheads:milk_jar"
+    },
+    "d": {
+      "item": "ae2:fluix_glass_cable"
+    },
+    "e": {
+      "item": "ae2:cell_component_16k"
+    },
+    "f": {
+      "item": "ae2:engineering_processor"
+    },
+    "g": {
+      "item": "cookingforblockheads:crafting_book"
+    },
+    "h": {
+      "item": "cookingforblockheads:no_filter_edition"
+    }
   },
   "result": {
-    "item": "culinarycompat:ae2_kitchen_station"
-  }
+    "id": "culinarycompat:ae2_kitchen_station"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ae2"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "cookingforblockheads"
+    }
+  ]
 }

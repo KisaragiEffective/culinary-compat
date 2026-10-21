@@ -1,7 +1,15 @@
 {
   "replace": false,
-  "values": [],
+  "values": [
+    {
+      "id": "farmersdelight:rice",
+      "required": false
+    }
+  ],
   "remove": [
-    {"id": "croptopia:rice", "required": false}
+    {
+      "id": "croptopia:rice",
+      "required": false
+    }
   ]
 }

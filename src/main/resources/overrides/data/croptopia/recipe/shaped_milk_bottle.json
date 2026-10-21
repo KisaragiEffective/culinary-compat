@@ -1,9 +1,4 @@
 {
-  "conditions": [
-    {
-      "type": "c:false"
-    }
-  ],
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "   ",
@@ -19,7 +14,16 @@
     }
   },
   "result": {
-    "item": "croptopia:milk_bottle",
+    "id": "croptopia:milk_bottle",
     "count": 16
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ]
 }

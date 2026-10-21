@@ -2,7 +2,13 @@
   "replace": false,
   "values": [],
   "remove": [
-    {"id": "pamhc2crops:riceitem", "required": false},
-    {"id": "croptopia:rice", "required": false}
+    {
+      "id": "pamhc2crops:riceitem",
+      "required": false
+    },
+    {
+      "id": "croptopia:rice",
+      "required": false
+    }
   ]
 }

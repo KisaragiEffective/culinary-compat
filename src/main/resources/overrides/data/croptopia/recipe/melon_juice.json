@@ -1,9 +1,4 @@
 {
-  "conditions": [
-    {
-      "type": "c:false"
-    }
-  ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
@@ -18,6 +13,15 @@
     }
   ],
   "result": {
-    "item": "croptopia:melon_juice"
-  }
+    "id": "croptopia:melon_juice"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ]
 }

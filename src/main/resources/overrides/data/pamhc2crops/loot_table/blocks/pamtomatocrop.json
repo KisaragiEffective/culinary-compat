@@ -3,15 +3,20 @@
   "pools": [
     {
       "name": "produce",
-      "rolls": 1.0,
+      "rolls": 1,
       "entries": [
-        {"type": "minecraft:item", "name": "farmersdelight:tomato"}
+        {
+          "type": "minecraft:item",
+          "name": "farmersdelight:tomato"
+        }
       ],
       "conditions": [
         {
           "condition": "minecraft:block_state_property",
           "block": "pamhc2crops:pamtomatocrop",
-          "properties": {"age": "7"}
+          "properties": {
+            "age": "7"
+          }
         }
       ],
       "functions": [
@@ -19,19 +24,36 @@
           "function": "minecraft:apply_bonus",
           "enchantment": "minecraft:fortune",
           "formula": "minecraft:uniform_bonus_count",
-          "parameters": {"bonusMultiplier": 1}
+          "parameters": {
+            "bonusMultiplier": 1
+          }
         }
       ]
     },
     {
       "name": "seed",
-      "rolls": 1.0,
+      "rolls": 1,
       "entries": [
-        {"type": "minecraft:item", "name": "farmersdelight:tomato_seeds"}
+        {
+          "type": "minecraft:item",
+          "name": "farmersdelight:tomato_seeds"
+        }
       ]
     }
   ],
   "functions": [
-    {"function": "minecraft:explosion_decay"}
+    {
+      "function": "minecraft:explosion_decay"
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "pamhc2crops"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
   ]
 }

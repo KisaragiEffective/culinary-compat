@@ -6,14 +6,34 @@
     " 5 "
   ],
   "key": {
-    "1": { "item": "minecraft:potato" },
-    "2": { "tag": "c:flour" },
-    "3": { "tag": "c:greenonions" },
-    "4": { "item": "farmersdelight:bacon" },
-    "5": { "tag": "c:water_bottles" }
+    "1": {
+      "item": "minecraft:potato"
+    },
+    "2": {
+      "tag": "c:flour"
+    },
+    "3": {
+      "tag": "c:greenonions"
+    },
+    "4": {
+      "item": "farmersdelight:bacon"
+    },
+    "5": {
+      "tag": "c:water_bottles"
+    }
   },
   "result": {
-    "item": "croptopia:potato_soup",
+    "id": "croptopia:potato_soup",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

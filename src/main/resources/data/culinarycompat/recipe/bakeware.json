@@ -1,34 +1,34 @@
 {
-	"type": "minecraft:crafting_shaped",
-	"conditions": [
-		{
-			"type": "c:or",
-			"values": [
-				{
-					"type": "c:mod_loaded",
-					"modid": "pamhc2foodcore"
-				},
-				{
-					"type": "c:mod_loaded",
-					"modid": "croptopia"
-				}
-			]
-		}
-	],
-	"pattern": [
-		"   ",
-		"TTT",
-		"CCC"
-	],
-	"key": {
-		"T": {
-			"item": "minecraft:terracotta"
-		},
-		"C": {
-			"item": "minecraft:copper_ingot"
-		}
-	},
-	"result": {
-		"item": "culinarycompat:bakeware"
-	}
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "TTT",
+    "CCC"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:terracotta"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {
+    "id": "culinarycompat:bakeware"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "pamhc2foodcore"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "croptopia"
+        }
+      ]
+    }
+  ]
 }

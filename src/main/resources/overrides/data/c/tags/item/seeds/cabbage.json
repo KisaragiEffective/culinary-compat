@@ -2,6 +2,9 @@
   "replace": false,
   "values": [],
   "remove": [
-    {"id": "pamhc2crops:cabbageseeditem", "required": false}
+    {
+      "id": "pamhc2crops:cabbageseeditem",
+      "required": false
+    }
   ]
 }

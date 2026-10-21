@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [],
+  "remove": [
+    {
+      "id": "pamhc2crops:onionitem",
+      "required": false
+    },
+    {
+      "id": "croptopia:onion",
+      "required": false
+    }
+  ]
+}

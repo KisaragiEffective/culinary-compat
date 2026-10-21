@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "croptopia:broccoli_seed"
+      "id": "croptopia:broccoli_seed"
     },
     "title": {
       "translate": "advancements.croptopia.gather_plains.title"
@@ -192,5 +192,15 @@
         ]
       }
     }
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

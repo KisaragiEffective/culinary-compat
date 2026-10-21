@@ -1,13 +1,31 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    { "item": "minecraft:bread" },
-    { "item": "farmersdelight:cooked_bacon" },
-    { "tag": "c:lettuce" },
-    { "tag": "c:tomatoes" }
+    {
+      "item": "minecraft:bread"
+    },
+    {
+      "item": "farmersdelight:cooked_bacon"
+    },
+    {
+      "tag": "c:lettuce"
+    },
+    {
+      "tag": "c:tomatoes"
+    }
   ],
   "result": {
-    "item": "croptopia:blt",
+    "id": "croptopia:blt",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

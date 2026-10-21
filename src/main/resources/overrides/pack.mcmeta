@@ -1,1 +1,6 @@
-{"pack":{"pack_format":15,"description":"Culinary Compat overrides (high-priority)"}}
+{
+  "pack": {
+    "pack_format": 34,
+    "description": "Culinary Compat overrides (high-priority)"
+  }
+}

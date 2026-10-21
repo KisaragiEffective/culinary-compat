@@ -1,13 +1,20 @@
 {
-  "conditions": [
-    {"type": "c:mod_loaded", "modid": "patchouli"}
-  ],
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {"item": "minecraft:book"},
-    {"item": "minecraft:cake"}
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "minecraft:cake"
+    }
   ],
   "result": {
-    "item": "culinarycompat:guidebook"
-  }
+    "id": "culinarycompat:guidebook"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ]
 }

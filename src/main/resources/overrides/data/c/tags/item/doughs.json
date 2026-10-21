@@ -1,6 +1,11 @@
 {
   "replace": false,
-  "values": [],
+  "values": [
+    {
+      "id": "farmersdelight:wheat_dough",
+      "required": false
+    }
+  ],
   "remove": [
     {
       "id": "croptopia:dough",

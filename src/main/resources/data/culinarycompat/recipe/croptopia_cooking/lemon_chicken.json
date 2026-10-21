@@ -1,33 +1,33 @@
 {
-	"type": "farmersdelight:cooking",
-	"conditions": [
-		{
-			"type": "c:mod_loaded",
-			"modid": "croptopia"
-		},
-		{
-			"type": "c:mod_loaded",
-			"modid": "farmersdelight"
-		}
-	],
-	"cookingtime": 200,
-	"experience": 0.8,
-	"ingredients": [
-		{
-			"tag": "c:lemons"
-		},
-		{
-			"tag": "c:chile_peppers"
-		},
-		{
-			"tag": "c:tomatoes"
-		},
-		{
-			"tag": "croptopia:chicken_replacements"
-		}
-	],
-	"result": {
-		"item": "croptopia:lemon_chicken",
-		"count": 1
-	}
+  "type": "farmersdelight:cooking",
+  "cookingtime": 200,
+  "experience": 0.8,
+  "ingredients": [
+    {
+      "tag": "c:lemons"
+    },
+    {
+      "tag": "c:chile_peppers"
+    },
+    {
+      "tag": "c:tomatoes"
+    },
+    {
+      "tag": "croptopia:chicken_replacements"
+    }
+  ],
+  "result": {
+    "id": "croptopia:lemon_chicken",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "croptopia:supreme_pizza"
+      "id": "croptopia:supreme_pizza"
     },
     "title": {
       "translate": "advancements.croptopia.gather_food.title"
@@ -2077,5 +2077,15 @@
         ]
       }
     }
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

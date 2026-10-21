@@ -1,9 +1,15 @@
 {
-	"replace": false,
-	"values": [
-		"culinarycompat:bakeware"
-	],
-	"remove": [
-		"pamhc2foodcore:bakewareitem"
-	]
+  "replace": false,
+  "values": [
+    {
+      "id": "culinarycompat:bakeware",
+      "required": false
+    }
+  ],
+  "remove": [
+    {
+      "id": "pamhc2foodcore:bakewareitem",
+      "required": false
+    }
+  ]
 }

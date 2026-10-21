@@ -1,30 +1,30 @@
 {
-	"type": "farmersdelight:cooking",
-	"conditions": [
-		{
-			"type": "c:mod_loaded",
-			"modid": "croptopia"
-		},
-		{
-			"type": "c:mod_loaded",
-			"modid": "farmersdelight"
-		}
-	],
-	"cookingtime": 200,
-	"experience": 0.8,
-	"ingredients": [
-		{
-			"item": "minecraft:potato"
-		},
-		{
-			"tag": "c:salts"
-		},
-		{
-			"tag": "c:olive_oils"
-		}
-	],
-	"result": {
-		"item": "croptopia:french_fries",
-		"count": 1
-	}
+  "type": "farmersdelight:cooking",
+  "cookingtime": 200,
+  "experience": 0.8,
+  "ingredients": [
+    {
+      "item": "minecraft:potato"
+    },
+    {
+      "tag": "c:salts"
+    },
+    {
+      "tag": "c:olive_oils"
+    }
+  ],
+  "result": {
+    "id": "croptopia:french_fries",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

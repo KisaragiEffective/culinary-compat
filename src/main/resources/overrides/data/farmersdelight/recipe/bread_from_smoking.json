@@ -1,10 +1,18 @@
 {
-  "conditions": [
-    { "type": "c:false" }
-  ],
   "type": "minecraft:smoking",
-  "ingredient": { "tag": "c:dough/wheat" },
+  "ingredient": {
+    "tag": "c:dough/wheat"
+  },
   "result": "minecraft:bread",
   "experience": 0.35,
-  "cookingtime": 100
+  "cookingtime": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
+    }
+  ]
 }

@@ -1,7 +1,15 @@
 {
   "replace": false,
-  "values": [],
+  "values": [
+    {
+      "id": "farmersdelight:cabbage",
+      "required": false
+    }
+  ],
   "remove": [
-    {"id": "croptopia:cabbage", "required": false}
+    {
+      "id": "croptopia:cabbage",
+      "required": false
+    }
   ]
 }
