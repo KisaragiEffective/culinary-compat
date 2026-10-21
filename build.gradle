@@ -44,7 +44,8 @@ tasks.named('processGameTestResources').configure {
     }
 }
 configurations {
-    gameTestImplementation.extendsFrom implementation, compileOnly
+    gameTestImplementation.extendsFrom implementation
+    gameTestCompileOnly.extendsFrom compileOnly
     gameTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
@@ -113,6 +114,7 @@ dependencies {
     gameTestRuntimeOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'
     gameTestRuntimeOnly 'maven.modrinth:balm:CquiaiDj'
     gameTestRuntimeOnly 'maven.modrinth:ae2:KDnFUmMm'
+    gameTestRuntimeOnly 'maven.modrinth:guideme:hFpGwC6q'
     // All artifacts below target Minecraft 1.21.1 and NeoForge. They remain optional.
     compileOnly 'maven.modrinth:farmers-delight:XTVZDOol'
     compileOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'
