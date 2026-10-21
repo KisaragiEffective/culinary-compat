@@ -12,9 +12,16 @@ group = mod_group_id
 base { archivesName = mod_id }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+sourceSets {
+    gameTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
 spotless {
     java {
-        target 'src/main/java/**/*.java'
+        target 'src/main/java/**/*.java', 'src/gameTest/java/**/*.java'
         eclipse()
         removeUnusedImports()
         importOrder('java', 'javax', 'net', 'com', 'org', '')
@@ -48,6 +55,7 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
+            if (providers.gradleProperty('gameTests').isPresent()) sourceSet sourceSets.gameTest
         }
     }
 }
@@ -88,6 +96,29 @@ dependencies {
     compileOnly 'curse.maven:twilights-flavors-delight-871735:9103719'
     compileOnly 'curse.maven:my-nethers-delight-1003673:8854319'
 
+    // Opt into the principal integrations when exercising development runs.
+    if (providers.gradleProperty('compatTest').isPresent()) {
+        runtimeOnly 'maven.modrinth:farmers-delight:XTVZDOol'
+        runtimeOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'
+        runtimeOnly 'maven.modrinth:balm:CquiaiDj'
+        runtimeOnly 'maven.modrinth:ae2:KDnFUmMm'
+        runtimeOnly 'maven.modrinth:guideme:hFpGwC6q'
+        runtimeOnly 'maven.modrinth:patchouli:BIogJv2D'
+        runtimeOnly 'maven.modrinth:storage-delight:7I2UUB9l'
+        runtimeOnly 'maven.modrinth:ends-delight:YTApg6Hl'
+        runtimeOnly 'maven.modrinth:enders-delight:5S67w5gs'
+        runtimeOnly 'curse.maven:pamhc2foodcore-372534:6919485'
+        runtimeOnly 'curse.maven:pamhc2crops-361385:8064883'
+        runtimeOnly 'curse.maven:pamhc2trees-365460:7847533'
+        runtimeOnly 'curse.maven:pamhc2foodextended-402231:6221521'
+        runtimeOnly 'curse.maven:croptopia-415438:7958876'
+        runtimeOnly 'maven.modrinth:epherolib:irMqtqYp'
+    }
+    if (providers.gradleProperty('viewers').isPresent()) {
+        runtimeOnly 'maven.modrinth:jei:iv3KiVkE'
+        runtimeOnly 'maven.modrinth:mezzconfig:idpM3DKC'
+        runtimeOnly 'maven.modrinth:emi:5sIPA1To'
+    }
 }
 
 tasks.named('processResources', ProcessResources).configure {
