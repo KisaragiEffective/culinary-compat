@@ -3,18 +3,18 @@ package io.github.smokahs.culinarycompat.compat.cfb.addons.farmersdelight;
 import java.util.List;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
@@ -36,7 +36,7 @@ public final class StorageDelight {
 
 	@OnlyIn(Dist.CLIENT)
 	public static final class KitchenTooltip {
-		private static final String TOOLTIP_KEY = "tooltip.cookingforblockheads:multiblock_kitchen";
+		private static final String TOOLTIP_KEY = "tooltip.cookingforblockheads.multiblock_kitchen";
 
 		private KitchenTooltip() {
 		}
@@ -44,7 +44,7 @@ public final class StorageDelight {
 		@SubscribeEvent
 		public static void onItemTooltip(ItemTooltipEvent event) {
 			ItemStack stack = event.getItemStack();
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 			if (id == null || !SD_MODID.equals(id.getNamespace())) {
 				return;
 			}

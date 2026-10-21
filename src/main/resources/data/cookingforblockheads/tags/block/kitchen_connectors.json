@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    "culinarycompat:bakeware",
+    {"id": "culinarycompat:ae2_kitchen_station", "required": false},
+    {"id": "farmersdelight:cutting_board", "required": false},
+    {"id": "farmersdelight:skillet", "required": false},
+    {"id": "farmersdelight:cooking_pot", "required": false},
+    {"id": "farmersdelight:stove", "required": false},
+    {"id": "#farmersdelight:cabinets", "required": false},
+    {"id": "ends_delight:end_stove", "required": false},
+    {"id": "endersdelight:endstone_stove", "required": false},
+    {"id": "mynethersdelight:nether_stove", "required": false},
+    {"id": "twilightdelight:maze_stove", "required": false},
+    {"id": "storagedelight:drawer", "required": false},
+    {"id": "storagedelight:drawer_door", "required": false},
+    {"id": "storagedelight:drawer_books", "required": false},
+    {"id": "storagedelight:glass_cabinet", "required": false},
+    {"id": "storagedelight:cabinet_variant", "required": false},
+    {"id": "storagedelight:bookshelf_door", "required": false},
+    {"id": "storagedelight:small_drawers", "required": false},
+    {"id": "storagedelight:countertop", "required": false}
+  ]
+}

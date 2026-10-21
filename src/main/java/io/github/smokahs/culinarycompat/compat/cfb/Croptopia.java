@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -24,12 +24,11 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
@@ -37,16 +36,18 @@ import io.github.smokahs.culinarycompat.registry.Recipes;
 
 public final class Croptopia {
 	public static final String CROPTOPIA_MODID = "croptopia";
-	public static final ResourceLocation FOOD_PRESS_ITEM = new ResourceLocation(CROPTOPIA_MODID, "food_press");
-	public static final ResourceLocation MORTAR_ITEM = new ResourceLocation(CROPTOPIA_MODID, "mortar_and_pestle");
+	public static final ResourceLocation FOOD_PRESS_ITEM = ResourceLocation.fromNamespaceAndPath(CROPTOPIA_MODID,
+			"food_press");
+	public static final ResourceLocation MORTAR_ITEM = ResourceLocation.fromNamespaceAndPath(CROPTOPIA_MODID,
+			"mortar_and_pestle");
 
 	private static final String BRIDGE_NAMESPACE = "culinarycompat";
 	private static final String BRIDGE_PATH_PREFIX = "croptopia_bridge/";
 	// FD present: croptopia knife recipes swap to the FD knives tag and show the
 	// netherite knife, matching the Pam + FD cutting board bridges.
-	private static final ResourceLocation KNIVES_TAG_ID = new ResourceLocation("forge", "tools/knives");
+	private static final ResourceLocation KNIVES_TAG_ID = ResourceLocation.fromNamespaceAndPath("c", "tools/knives");
 	private static final TagKey<Item> KNIVES_TAG = TagKey.create(Registries.ITEM, KNIVES_TAG_ID);
-	private static final ResourceLocation FD_NETHERITE_KNIFE = new ResourceLocation("farmersdelight",
+	private static final ResourceLocation FD_NETHERITE_KNIFE = ResourceLocation.fromNamespaceAndPath("farmersdelight",
 			"netherite_knife");
 
 	private static final Set<ResourceLocation> FRYING_PAN_OUTPUTS = ConcurrentHashMap.newKeySet();
@@ -56,7 +57,8 @@ public final class Croptopia {
 	private static final Set<ResourceLocation> MORTAR_OUTPUTS = ConcurrentHashMap.newKeySet();
 	private static final Set<ResourceLocation> BAKEWARE_OUTPUTS = ConcurrentHashMap.newKeySet();
 
-	private static final ResourceLocation BAKEWARE_ITEM = new ResourceLocation("culinarycompat", "bakeware");
+	private static final ResourceLocation BAKEWARE_ITEM = ResourceLocation.fromNamespaceAndPath("culinarycompat",
+			"bakeware");
 	private static final String BAKEWARE_SOURCE = "croptopia_bakeware";
 	// croptopia "fries" its oven food; baked outputs re-home to the bakeware gate
 	private static final Set<ResourceLocation> BAKED_GOODS = bakedGoods();
@@ -69,7 +71,7 @@ public final class Croptopia {
 				"roasted_sunflower_seeds", "roasted_turnips", "spaghetti_squash"};
 		Set<ResourceLocation> set = new HashSet<>();
 		for (String path : paths) {
-			set.add(new ResourceLocation(CROPTOPIA_MODID, path));
+			set.add(ResourceLocation.fromNamespaceAndPath(CROPTOPIA_MODID, path));
 		}
 		return Set.copyOf(set);
 	}
@@ -90,9 +92,9 @@ public final class Croptopia {
 		final ResourceLocation workstationId;
 
 		Tool(String itemId, String source, String workstationId) {
-			this.itemId = new ResourceLocation(itemId);
+			this.itemId = ResourceLocation.parse(itemId);
 			this.source = source;
-			this.workstationId = new ResourceLocation(workstationId);
+			this.workstationId = ResourceLocation.parse(workstationId);
 		}
 
 		Set<ResourceLocation> outputs() {
@@ -107,27 +109,39 @@ public final class Croptopia {
 	}
 
 	public static Set<ResourceLocation> getFryingPanOutputs() {
-		return Collections.unmodifiableSet(FRYING_PAN_OUTPUTS);
+		return FRYING_PAN_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_frying_pan")
+				: Collections.unmodifiableSet(FRYING_PAN_OUTPUTS);
 	}
 
 	public static Set<ResourceLocation> getCookingPotOutputs() {
-		return Collections.unmodifiableSet(COOKING_POT_OUTPUTS);
+		return COOKING_POT_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_cooking_pot")
+				: Collections.unmodifiableSet(COOKING_POT_OUTPUTS);
 	}
 
 	public static Set<ResourceLocation> getKnifeOutputs() {
-		return Collections.unmodifiableSet(KNIFE_OUTPUTS);
+		return KNIFE_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_knife")
+				: Collections.unmodifiableSet(KNIFE_OUTPUTS);
 	}
 
 	public static Set<ResourceLocation> getFoodPressOutputs() {
-		return Collections.unmodifiableSet(FOOD_PRESS_OUTPUTS);
+		return FOOD_PRESS_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_food_press")
+				: Collections.unmodifiableSet(FOOD_PRESS_OUTPUTS);
 	}
 
 	public static Set<ResourceLocation> getMortarOutputs() {
-		return Collections.unmodifiableSet(MORTAR_OUTPUTS);
+		return MORTAR_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_mortar")
+				: Collections.unmodifiableSet(MORTAR_OUTPUTS);
 	}
 
 	public static Set<ResourceLocation> getBakewareOutputs() {
-		return Collections.unmodifiableSet(BAKEWARE_OUTPUTS);
+		return BAKEWARE_OUTPUTS.isEmpty()
+				? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor("croptopia_bakeware")
+				: Collections.unmodifiableSet(BAKEWARE_OUTPUTS);
 	}
 
 	public static final class Stripper {
@@ -173,11 +187,12 @@ public final class Croptopia {
 
 			List<Template> found = new ArrayList<>();
 			Set<ResourceLocation> toStrip = new HashSet<>();
-			for (Recipe<?> recipe : rm.getRecipes()) {
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.values(rm)) {
 				if (recipe.getType() != RecipeType.CRAFTING || !(recipe instanceof CraftingRecipe)) {
 					continue;
 				}
-				if (!CROPTOPIA_MODID.equals(recipe.getId().getNamespace())) {
+				if (!CROPTOPIA_MODID
+						.equals(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace())) {
 					continue;
 				}
 
@@ -210,12 +225,12 @@ public final class Croptopia {
 				if (result.isEmpty()) {
 					continue;
 				}
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null) {
 					continue;
 				}
 				if (fdPresent && Tool.KNIFE.itemId.equals(outputId)) {
-					toStrip.add(recipe.getId());
+					toStrip.add(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe));
 					continue;
 				}
 				if (used.isEmpty()) {
@@ -233,11 +248,11 @@ public final class Croptopia {
 				}
 
 				boolean knifeSwap = fdPresent && used.contains(Tool.KNIFE);
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				found.add(new Template(bridgeId, source, food, result.copy(), workstation.copy(), outputId, used,
 						knifeSwap, bakeware));
-				toStrip.add(recipe.getId());
+				toStrip.add(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe));
 			}
 
 			if (toStrip.isEmpty()) {
@@ -248,14 +263,15 @@ public final class Croptopia {
 			templates = found;
 
 			List<Recipe<?>> kept = new ArrayList<>();
-			for (Recipe<?> recipe : rm.getRecipes()) {
-				if (!toStrip.contains(recipe.getId())) {
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.values(rm)) {
+				if (!toStrip.contains(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe))) {
 					kept.add(recipe);
 				}
 			}
-			rm.replaceRecipes(kept);
+			io.github.smokahs.culinarycompat.recipe.RecipeIds.replace(rm, kept);
 
 			registerBridges(registries);
+			CookingRegistry.finish();
 
 			CulinaryCompat.LOGGER.info(
 					"Croptopia kitchen bridge: moved {} tool recipes into the kitchen (pan={}, pot={}, knife={}, press={}, mortar={}, bakeware={})",
@@ -271,8 +287,8 @@ public final class Croptopia {
 					bridge = new Recipes.ToolBridgeShapeless(t.bridgeId(), "", CraftingBookCategory.MISC,
 							t.result().copy(), t.food(), s -> s.is(KNIVES_TAG), FD_NETHERITE_KNIFE);
 				} else {
-					bridge = new ShapelessRecipe(t.bridgeId(), "", CraftingBookCategory.MISC, t.result().copy(),
-							t.food());
+					bridge = new io.github.smokahs.culinarycompat.registry.Recipes.BridgeShapeless(t.bridgeId(), "",
+							CraftingBookCategory.MISC, t.result().copy(), t.food());
 				}
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(t.source(), t.bridgeId(), new ArrayList<>(t.food()),
@@ -305,7 +321,7 @@ public final class Croptopia {
 			if (items.length != 1) {
 				return null;
 			}
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(items[0].getItem());
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(items[0].getItem());
 			if (id == null) {
 				return null;
 			}
@@ -318,7 +334,7 @@ public final class Croptopia {
 		}
 
 		private static ItemStack stackOf(ResourceLocation id) {
-			Item item = ForgeRegistries.ITEMS.getValue(id);
+			Item item = BuiltInRegistries.ITEM.get(id);
 			return item == null ? ItemStack.EMPTY : new ItemStack(item);
 		}
 	}

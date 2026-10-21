@@ -11,6 +11,8 @@
     "cfb.Multiblock",
     "cfb.SinkProvider",
     "cfb.RecipeBook",
+    "cfb.CraftingContext",
+    "cfb.CraftingOperation",
     "cfb.Registry",
     "compat.EndersDelight",
     "compat.EndsDelight",

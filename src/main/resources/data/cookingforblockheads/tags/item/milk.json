@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "farmersdelight:milk_bottle", "required": false},
+    {"id": "croptopia:milk_bottle", "required": false},
+    {"id": "pamhc2foodcore:freshmilkitem", "required": false}
+  ]
+}

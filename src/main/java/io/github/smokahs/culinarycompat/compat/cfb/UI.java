@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import net.blay09.mods.cookingforblockheads.menu.inventory.InventoryCraftBook;
+import net.blay09.mods.cookingforblockheads.menu.KitchenMenu;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -22,11 +23,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import io.github.smokahs.culinarycompat.bridges.Bridges;
 import io.github.smokahs.culinarycompat.config.Configs;
@@ -40,11 +40,11 @@ public final class UI {
 	}
 
 	public static final class CraftSound {
-		private static final ResourceLocation KNIFE_SOUND_ID = new ResourceLocation(CFB.FD_MODID,
+		private static final ResourceLocation KNIFE_SOUND_ID = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
 				"block.cutting_board.knife_cut");
-		private static final ResourceLocation SKILLET_SOUND_ID = new ResourceLocation(CFB.FD_MODID,
+		private static final ResourceLocation SKILLET_SOUND_ID = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
 				"block.skillet.add_food");
-		private static final ResourceLocation POT_SOUND_ID = new ResourceLocation(CFB.FD_MODID,
+		private static final ResourceLocation POT_SOUND_ID = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
 				"block.cooking_pot.boil_soup");
 
 		private CraftSound() {
@@ -52,19 +52,21 @@ public final class UI {
 
 		@SubscribeEvent
 		public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-			if (!(event.getInventory() instanceof InventoryCraftBook))
+			if (!(event.getEntity().containerMenu instanceof KitchenMenu))
 				return;
 
-			ItemStack crafted = event.getCrafting();
+			crafted(event.getEntity(), event.getCrafting());
+		}
+
+		public static void crafted(Player player, ItemStack crafted) {
 			if (crafted.isEmpty())
 				return;
-			ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(crafted.getItem());
+			ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(crafted.getItem());
 			if (outputId == null)
 				return;
 
 			ResourceLocation soundId = resolveSound(outputId);
 
-			Player player = event.getEntity();
 			Level level = player.level();
 			if (level.isClientSide)
 				return;
@@ -78,7 +80,7 @@ public final class UI {
 
 			if (soundId == null)
 				return;
-			SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(soundId);
+			SoundEvent sound = BuiltInRegistries.SOUND_EVENT.get(soundId);
 			if (sound == null)
 				return;
 
@@ -106,12 +108,12 @@ public final class UI {
 	@OnlyIn(Dist.CLIENT)
 	public static final class Tooltip {
 		private static final Set<ResourceLocation> EXTRA_KITCHEN_MEMBER_ITEMS = Set
-				.of(new ResourceLocation("culinarycompat", "bakeware"));
+				.of(ResourceLocation.fromNamespaceAndPath("culinarycompat", "bakeware"));
 		private static final TagKey<Block> FD_CABINETS = TagKey.create(Registries.BLOCK,
-				new ResourceLocation(CFB.FD_MODID, "cabinets"));
-		private static final ResourceLocation FD_NETHERITE_KNIFE = new ResourceLocation(CFB.FD_MODID,
+				ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID, "cabinets"));
+		private static final ResourceLocation FD_NETHERITE_KNIFE = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
 				"netherite_knife");
-		private static final String TOOLTIP_KEY = "tooltip.cookingforblockheads:multiblock_kitchen";
+		private static final String TOOLTIP_KEY = "tooltip.cookingforblockheads.multiblock_kitchen";
 
 		private Tooltip() {
 		}
@@ -120,7 +122,7 @@ public final class UI {
 		public static void onItemTooltip(ItemTooltipEvent event) {
 			ItemStack stack = event.getItemStack();
 			Item item = stack.getItem();
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
 			if (id == null)
 				return;
 			if (isKitchenMember(item, id)) {
@@ -152,8 +154,9 @@ public final class UI {
 					|| block instanceof CuttingBoardBlock) {
 				return true;
 			}
-			ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(block);
-			if (blockId != null && CFB.KitchenConnector.ADDON_STOVE_IDS.contains(blockId)) {
+			ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+			if (blockId != null && Set.of("endersdelight:endstone_stove", "ends_delight:end_stove",
+					"nethersdelight:blackstone_stove", "twilightdelight:maze_stove").contains(blockId.toString())) {
 				return true;
 			}
 			return block.defaultBlockState().is(FD_CABINETS);
@@ -162,7 +165,7 @@ public final class UI {
 
 	@OnlyIn(Dist.CLIENT)
 	public static final class MissingToolsTooltip {
-		private static final String CFB_MISSING_TOOLS_KEY = "tooltip.cookingforblockheads:missing_tools";
+		private static final String CFB_MISSING_TOOLS_KEY = "tooltip.cookingforblockheads.missing_tools";
 
 		private MissingToolsTooltip() {
 		}
@@ -183,7 +186,7 @@ public final class UI {
 				return;
 
 			ItemStack stack = event.getItemStack();
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 			if (id == null)
 				return;
 

@@ -1,12 +1,12 @@
 package io.github.smokahs.culinarycompat.mixin.cfb;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,8 +22,8 @@ public abstract class FdCookware {
 	@Unique
 	private static final String CULINARYCOMPAT$CFB_NAMESPACE = "cookingforblockheads";
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$COOKING_TABLE = new ResourceLocation(
-			CULINARYCOMPAT$CFB_NAMESPACE, "cooking_table");
+	private static final ResourceLocation CULINARYCOMPAT$COOKING_TABLE = ResourceLocation
+			.fromNamespaceAndPath(CULINARYCOMPAT$CFB_NAMESPACE, "cooking_table");
 	@Unique
 	private static final double CULINARYCOMPAT$OFFSET = -1.0 / 16.0;
 
@@ -31,7 +31,7 @@ public abstract class FdCookware {
 	private void culinarycompat$offsetShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx,
 			CallbackInfoReturnable<VoxelShape> cir) {
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation belowId = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation belowId = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		if (belowId != null && CULINARYCOMPAT$CFB_NAMESPACE.equals(belowId.getNamespace())
 				&& !CULINARYCOMPAT$COOKING_TABLE.equals(belowId)) {
 			cir.setReturnValue(cir.getReturnValue().move(0, CULINARYCOMPAT$OFFSET, 0));

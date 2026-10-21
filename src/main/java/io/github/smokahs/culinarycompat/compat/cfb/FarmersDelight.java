@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,11 +25,10 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 import io.github.smokahs.culinarycompat.bridges.Bridges;
 import io.github.smokahs.culinarycompat.registry.Recipes;
@@ -41,12 +39,15 @@ public final class FarmersDelight {
 	}
 
 	public static final class Cutting {
-		private static final ResourceLocation CUTTING_TYPE_ID = new ResourceLocation(CFB.FD_MODID, "cutting");
-		private static final ResourceLocation KNIVES_TAG_ID = new ResourceLocation("forge", "tools/knives");
+		private static final ResourceLocation CUTTING_TYPE_ID = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
+				"cutting");
+		private static final ResourceLocation KNIVES_TAG_ID = ResourceLocation.fromNamespaceAndPath("c",
+				"tools/knives");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "cutting_bridge/";
 		private static final String BRIDGE_SOURCE = "fd_cutting";
-		private static final ResourceLocation FD_CUTTING_BOARD_ID = new ResourceLocation(CFB.FD_MODID, "cutting_board");
+		private static final ResourceLocation FD_CUTTING_BOARD_ID = ResourceLocation.fromNamespaceAndPath(CFB.FD_MODID,
+				"cutting_board");
 
 		private static final Set<ResourceLocation> BRIDGED_OUTPUTS = ConcurrentHashMap.newKeySet();
 		private static final Set<ResourceLocation> EXCLUSIVE_KEYS = ConcurrentHashMap.newKeySet();
@@ -55,7 +56,9 @@ public final class FarmersDelight {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -85,20 +88,20 @@ public final class FarmersDelight {
 
 			Set<ResourceLocation> craftingOutputs = OutputIndex.collect(recipeManager, registries);
 
-			Item workstationItem = ForgeRegistries.ITEMS.getValue(FD_CUTTING_BOARD_ID);
+			Item workstationItem = BuiltInRegistries.ITEM.get(FD_CUTTING_BOARD_ID);
 			ItemStack workstationStack = workstationItem == null ? ItemStack.EMPTY : new ItemStack(workstationItem);
 
 			TagKey<Item> knivesTag = TagKey.create(Registries.ITEM, KNIVES_TAG_ID);
 			Ingredient knifeIngredient = Ingredient.of(knivesTag);
 
-			for (Recipe<?> recipe : recipeManager.getRecipes()) {
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.values(recipeManager)) {
 				if (recipe.getType() != cuttingType)
 					continue;
 
 				ItemStack primary = recipe.getResultItem(registries);
 				if (primary.isEmpty())
 					continue;
-				if (!primary.getItem().isEdible())
+				if (!primary.has(net.minecraft.core.component.DataComponents.FOOD))
 					continue;
 
 				if (recipe.getIngredients().isEmpty())
@@ -107,7 +110,7 @@ public final class FarmersDelight {
 				if (input == null || input == Ingredient.EMPTY)
 					continue;
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(primary.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(primary.getItem());
 				if (outputId == null)
 					continue;
 
@@ -118,11 +121,12 @@ public final class FarmersDelight {
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
 				NonNullList<Ingredient> ings = NonNullList.of(Ingredient.EMPTY, input, knifeIngredient);
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				Recipes.ToolBridgeShapeless bridge = new Recipes.ToolBridgeShapeless(bridgeId, "",
 						CraftingBookCategory.MISC, primary.copy(), ings, s -> s.is(knivesTag),
-						new ResourceLocation("farmersdelight", "netherite_knife"));
+						ResourceLocation.fromNamespaceAndPath("farmersdelight", "netherite_knife"));
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(ings), primary.copy(),
@@ -136,8 +140,10 @@ public final class FarmersDelight {
 	}
 
 	public static final class Pot {
-		private static final ResourceLocation FD_COOKING_POT_ID = new ResourceLocation("farmersdelight", "cooking_pot");
-		private static final ResourceLocation FD_COOKING_TYPE_ID = new ResourceLocation("farmersdelight", "cooking");
+		private static final ResourceLocation FD_COOKING_POT_ID = ResourceLocation
+				.fromNamespaceAndPath("farmersdelight", "cooking_pot");
+		private static final ResourceLocation FD_COOKING_TYPE_ID = ResourceLocation
+				.fromNamespaceAndPath("farmersdelight", "cooking");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "fd_cooking_bridge/";
 		private static final String BRIDGE_SOURCE = "fd_cooking";
@@ -149,7 +155,9 @@ public final class FarmersDelight {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -162,7 +170,7 @@ public final class FarmersDelight {
 			EXCLUSIVE_KEYS.clear();
 			Bridges.clearBySource(BRIDGE_SOURCE);
 
-			Item fdPot = ForgeRegistries.ITEMS.getValue(FD_COOKING_POT_ID);
+			Item fdPot = BuiltInRegistries.ITEM.get(FD_COOKING_POT_ID);
 			if (fdPot == null)
 				return;
 			ItemStack workstationStack = new ItemStack(fdPot);
@@ -174,7 +182,8 @@ public final class FarmersDelight {
 
 			Set<ResourceLocation> craftingOutputs = OutputIndex.collect(recipeManager, registries);
 
-			List<CookingPotRecipe> recipes = recipeManager.getAllRecipesFor(cookingType);
+			List<CookingPotRecipe> recipes = io.github.smokahs.culinarycompat.recipe.RecipeIds.allFor(recipeManager,
+					cookingType);
 			for (CookingPotRecipe recipe : recipes) {
 				ItemStack result = recipe.getResultItem(registries);
 				if (result.isEmpty())
@@ -194,7 +203,7 @@ public final class FarmersDelight {
 					ingredients.add(Ingredient.of(container));
 				}
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
@@ -204,10 +213,11 @@ public final class FarmersDelight {
 				Collection<?> existing = CookingRegistry.getFoodRecipes(outputId);
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
-				ShapelessRecipe bridge = new ShapelessRecipe(bridgeId, "", CraftingBookCategory.MISC, result.copy(),
-						ingredients);
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
+				ShapelessRecipe bridge = new io.github.smokahs.culinarycompat.registry.Recipes.BridgeShapeless(bridgeId,
+						"", CraftingBookCategory.MISC, result.copy(), ingredients);
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(ingredients), result.copy(),
@@ -221,7 +231,8 @@ public final class FarmersDelight {
 	}
 
 	public static final class Campfire {
-		private static final ResourceLocation CFB_OVEN_ID = new ResourceLocation("cookingforblockheads", "oven");
+		private static final ResourceLocation CFB_OVEN_ID = ResourceLocation
+				.fromNamespaceAndPath("cookingforblockheads", "oven");
 		private static final String BRIDGE_SOURCE = "campfire_oven";
 
 		private static final Set<ResourceLocation> BRIDGED_OUTPUTS = ConcurrentHashMap.newKeySet();
@@ -231,7 +242,9 @@ public final class FarmersDelight {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getHiddenCampfireRecipeIds() {
@@ -243,24 +256,26 @@ public final class FarmersDelight {
 			HIDDEN_CAMPFIRE_RECIPE_IDS.clear();
 			Bridges.clearBySource(BRIDGE_SOURCE);
 
-			Item ovenItem = ForgeRegistries.ITEMS.getValue(CFB_OVEN_ID);
+			Item ovenItem = BuiltInRegistries.ITEM.get(CFB_OVEN_ID);
 			if (ovenItem == null)
 				return;
 			ItemStack workstationStack = new ItemStack(ovenItem);
 
 			Set<ResourceLocation> smeltingOutputs = new HashSet<>();
-			for (SmeltingRecipe sr : recipeManager.getAllRecipesFor(RecipeType.SMELTING)) {
+			for (SmeltingRecipe sr : io.github.smokahs.culinarycompat.recipe.RecipeIds.allFor(recipeManager,
+					RecipeType.SMELTING)) {
 				ItemStack out = sr.getResultItem(registries);
 				if (out.isEmpty())
 					continue;
-				ResourceLocation id = ForgeRegistries.ITEMS.getKey(out.getItem());
+				ResourceLocation id = BuiltInRegistries.ITEM.getKey(out.getItem());
 				if (id != null)
 					smeltingOutputs.add(id);
 			}
 
 			Set<ResourceLocation> craftingOutputs = OutputIndex.collect(recipeManager, registries);
 
-			List<CampfireCookingRecipe> campfireRecipes = recipeManager.getAllRecipesFor(RecipeType.CAMPFIRE_COOKING);
+			List<CampfireCookingRecipe> campfireRecipes = io.github.smokahs.culinarycompat.recipe.RecipeIds
+					.allFor(recipeManager, RecipeType.CAMPFIRE_COOKING);
 			for (CampfireCookingRecipe recipe : campfireRecipes) {
 				NonNullList<Ingredient> ings = recipe.getIngredients();
 				if (ings.isEmpty())
@@ -273,25 +288,26 @@ public final class FarmersDelight {
 				if (result.isEmpty())
 					continue;
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
 				if (smeltingOutputs.contains(outputId)) {
-					HIDDEN_CAMPFIRE_RECIPE_IDS.add(recipe.getId());
+					HIDDEN_CAMPFIRE_RECIPE_IDS.add(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe));
 					continue;
 				}
 
 				if (craftingOutputs.contains(outputId)) {
-					HIDDEN_CAMPFIRE_RECIPE_IDS.add(recipe.getId());
+					HIDDEN_CAMPFIRE_RECIPE_IDS.add(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe));
 					continue;
 				}
 
 				CookingRegistry.addFoodRecipe(recipe, registries);
-				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, recipe.getId(), new ArrayList<>(ings), result.copy(),
-						workstationStack.copy()));
+				Bridges.register(
+						new Bridges.Entry(BRIDGE_SOURCE, io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe),
+								new ArrayList<>(ings), result.copy(), workstationStack.copy()));
 				BRIDGED_OUTPUTS.add(outputId);
-				HIDDEN_CAMPFIRE_RECIPE_IDS.add(recipe.getId());
+				HIDDEN_CAMPFIRE_RECIPE_IDS.add(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe));
 			}
 		}
 	}
@@ -302,11 +318,15 @@ public final class FarmersDelight {
 
 		static Set<ResourceLocation> collect(RecipeManager recipeManager, RegistryAccess registries) {
 			Set<ResourceLocation> outputs = new HashSet<>();
-			for (Recipe<?> recipe : recipeManager.getAllRecipesFor(RecipeType.CRAFTING)) {
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.allFor(recipeManager,
+					RecipeType.CRAFTING)) {
+				if ("culinarycompat"
+						.equals(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()))
+					continue;
 				ItemStack result = recipe.getResultItem(registries);
 				if (result.isEmpty())
 					continue;
-				ResourceLocation id = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation id = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (id != null)
 					outputs.add(id);
 			}

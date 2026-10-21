@@ -4,14 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.blay09.mods.cookingforblockheads.KitchenMultiBlock;
-import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
+import net.blay09.mods.cookingforblockheads.api.KitchenItemProvider;
+import net.blay09.mods.cookingforblockheads.crafting.KitchenImpl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,52 +22,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import io.github.smokahs.culinarycompat.compat.cfb.CFB;
 
-@Mixin(value = KitchenMultiBlock.class, remap = false)
+@Mixin(value = KitchenImpl.class, remap = false)
 public abstract class Multiblock implements CFB.KitchenMemberView {
-	@Shadow(remap = false)
+	@Shadow
 	@Final
-	private List<IKitchenItemProvider> itemProviderList;
-
+	private List<KitchenItemProvider> itemProviderList;
+	@Shadow
+	@Final
+	private Set<BlockPos> checkedPos;
 	@Unique
-	private final Set<ResourceLocation> culinarycompat$memberBlocks = new HashSet<>();
-
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$BAKEWARE = new ResourceLocation("culinarycompat", "bakeware");
-	@Unique
-	private static final Set<ResourceLocation> CULINARYCOMPAT$NEIGHBOR_TARGETS = Set.of(CULINARYCOMPAT$BAKEWARE,
-			new ResourceLocation("farmersdelight", "cutting_board"), new ResourceLocation("farmersdelight", "skillet"),
-			new ResourceLocation("farmersdelight", "cooking_pot"));
-
-	// intentional bug ;) (this makes certain blocks connect to cfb kitchens without
-	// physically touching, but still adjacent)
-	@Inject(method = "findNeighbourKitchenBlocks", at = @At("HEAD"), remap = false)
-	private void culinarycompat$recordMember(Level level, BlockPos pos, boolean extendedUpSearch, CallbackInfo ci) {
-		BlockState state = level.getBlockState(pos);
-		if (!state.isAir()) {
-			ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
-			if (id != null) {
-				culinarycompat$memberBlocks.add(id);
-			}
-		}
-		for (Direction d : Direction.values()) {
-			BlockPos n = pos.relative(d);
-			BlockState ns = level.getBlockState(n);
-			if (ns.isAir())
-				continue;
-			ResourceLocation nid = ForgeRegistries.BLOCKS.getKey(ns.getBlock());
-			if (CULINARYCOMPAT$NEIGHBOR_TARGETS.contains(nid)) {
-				culinarycompat$memberBlocks.add(nid);
-			}
+	private final Set<ResourceLocation> culinarycompat$members = new HashSet<>();
+	@Inject(method = "findNeighbourCraftingBlocks", at = @At("HEAD"))
+	private void culinarycompat$record(Level level, BlockPos pos, boolean extended, CallbackInfo ci) {
+		culinarycompat$members.add(BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()));
+		for (Direction direction : Direction.values()) {
+			var id = BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos.relative(direction)).getBlock());
+			if (Set.of("culinarycompat", "farmersdelight", "endersdelight", "ends_delight", "mynethersdelight",
+					"twilightdelight").contains(id.getNamespace()))
+				culinarycompat$members.add(id);
 		}
 	}
-
 	@Override
 	public Set<ResourceLocation> culinarycompat$getMemberBlocks() {
-		return culinarycompat$memberBlocks;
+		return culinarycompat$members;
 	}
-
 	@Override
-	public List<IKitchenItemProvider> culinarycompat$getKitchenItemProviders() {
-		return itemProviderList == null ? List.of() : itemProviderList;
+	public List<KitchenItemProvider> culinarycompat$getKitchenItemProviders() {
+		return itemProviderList;
+	}
+	@Override
+	public Set<BlockPos> culinarycompat$getMemberPositions() {
+		return Set.copyOf(checkedPos);
 	}
 }

@@ -1,6 +1,6 @@
 package io.github.smokahs.culinarycompat.mixin.cfb;
 
-import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
+import net.blay09.mods.cookingforblockheads.registry.CookingForBlockheadsRegistry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.fml.ModList;
@@ -15,11 +15,21 @@ import io.github.smokahs.culinarycompat.compat.cfb.Croptopia;
 import io.github.smokahs.culinarycompat.compat.cfb.FarmersDelight;
 import io.github.smokahs.culinarycompat.compat.cfb.Pam;
 
-@Mixin(value = CookingRegistry.class, remap = false)
+@Mixin(value = CookingForBlockheadsRegistry.class, remap = false)
 public abstract class Registry {
-	@Inject(method = "initFoodRegistry(Lnet/minecraft/world/item/crafting/RecipeManager;Lnet/minecraft/core/RegistryAccess;)V", at = @At("RETURN"), remap = false, require = 0)
+	@Inject(method = "reload", at = @At("HEAD"))
+	private static void culinarycompat$begin(RecipeManager recipes, RegistryAccess registries, CallbackInfo ci) {
+		var server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null || server.getRecipeManager() != recipes)
+			return;
+		io.github.smokahs.culinarycompat.compat.cfb.CookingRegistry.begin(recipes);
+	}
+	@Inject(method = "reload", at = @At("RETURN"))
 	private static void culinarycompat$afterInit(RecipeManager recipeManager, RegistryAccess registryAccess,
 			CallbackInfo ci) {
+		var server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null || server.getRecipeManager() != recipeManager)
+			return;
 		FarmersDelight.Cutting.registerBridges(recipeManager, registryAccess);
 		FarmersDelight.Campfire.registerBridges(recipeManager, registryAccess);
 		if (ModList.get().isLoaded("farmersdelight")) {
@@ -34,5 +44,6 @@ public abstract class Registry {
 		if (ModList.get().isLoaded(Croptopia.CROPTOPIA_MODID) && ServerLifecycleHooks.getCurrentServer() != null) {
 			Croptopia.Stripper.registerBridges(registryAccess);
 		}
+		io.github.smokahs.culinarycompat.compat.cfb.CookingRegistry.finish();
 	}
 }

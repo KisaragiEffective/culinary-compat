@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.blay09.mods.cookingforblockheads.client.gui.screen.RecipeBookScreen;
-import net.blay09.mods.cookingforblockheads.menu.RecipeBookMenu;
+import net.blay09.mods.cookingforblockheads.client.gui.screen.KitchenScreen;
+import net.blay09.mods.cookingforblockheads.menu.KitchenMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
@@ -18,10 +19,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.TickEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import io.github.smokahs.culinarycompat.config.Configs;
 import io.github.smokahs.culinarycompat.network.Network;
@@ -38,6 +38,7 @@ public final class BakeState {
 		public ResourceLocation outputId;
 		public ItemStack output;
 		public List<ItemStack> ingredients;
+		public List<ItemStack> remainders = List.of();
 		public long startTick;
 
 		public Pending(BakePhase phase, ResourceLocation outputId) {
@@ -70,10 +71,11 @@ public final class BakeState {
 		}
 
 		public static void setBaking(ServerPlayer player, ResourceLocation outputId, ItemStack output,
-				List<ItemStack> ingredients) {
+				List<ItemStack> ingredients, List<ItemStack> remainders) {
 			Pending p = new Pending(BakePhase.BAKING, outputId);
 			p.output = output.copy();
 			p.ingredients = ingredients;
+			p.remainders = remainders;
 			p.startTick = player.serverLevel().getGameTime();
 			PENDING.put(player.getUUID(), p);
 			if (!output.isEmpty()) {
@@ -87,10 +89,8 @@ public final class BakeState {
 		}
 
 		@SubscribeEvent
-		public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-			if (event.phase != TickEvent.Phase.END)
-				return;
-			if (!(event.player instanceof ServerPlayer sp))
+		public static void onPlayerTick(PlayerTickEvent.Post event) {
+			if (!(event.getEntity() instanceof ServerPlayer sp))
 				return;
 			Pending p = PENDING.get(sp.getUUID());
 			if (p == null || p.phase != BakePhase.BAKING)
@@ -100,6 +100,10 @@ public final class BakeState {
 				return;
 
 			ItemStack out = p.output;
+			for (ItemStack remainder : p.remainders) {
+				if (!remainder.isEmpty() && !sp.getInventory().add(remainder))
+					sp.drop(remainder, false);
+			}
 			if (!out.isEmpty()) {
 				if (!sp.getInventory().add(out)) {
 					sp.drop(out, false);
@@ -116,7 +120,7 @@ public final class BakeState {
 			Pending p = PENDING.get(sp.getUUID());
 			if (p == null)
 				return;
-			if (!(event.getContainer() instanceof RecipeBookMenu))
+			if (!(event.getContainer() instanceof KitchenMenu))
 				return;
 
 			if (p.phase == BakePhase.BAKING) {
@@ -141,7 +145,8 @@ public final class BakeState {
 
 	@OnlyIn(Dist.CLIENT)
 	public static final class Client {
-		private static final ResourceLocation CFB_OVEN_OPEN = new ResourceLocation("cookingforblockheads", "oven_open");
+		private static final ResourceLocation CFB_OVEN_OPEN = ResourceLocation
+				.fromNamespaceAndPath("cookingforblockheads", "oven_open");
 		private static BakePhase phase = null;
 		private static ResourceLocation outputId = null;
 
@@ -164,7 +169,7 @@ public final class BakeState {
 				case CONFIRM -> {
 					phase = BakePhase.CONFIRM;
 					outputId = newOutputId;
-					playSound(ForgeRegistries.SOUND_EVENTS.getValue(CFB_OVEN_OPEN), 1.0f);
+					playSound(BuiltInRegistries.SOUND_EVENT.get(CFB_OVEN_OPEN), 1.0f);
 				}
 				case BAKING -> {
 					phase = BakePhase.BAKING;
@@ -201,8 +206,8 @@ public final class BakeState {
 	// chain)
 	@OnlyIn(Dist.CLIENT)
 	public static final class Tooltip {
-		private static final String CFB_CLICK_CRAFT_ONE = "tooltip.cookingforblockheads:click_to_craft_one";
-		private static final String CFB_CLICK_CRAFT_STACK = "tooltip.cookingforblockheads:click_to_craft_stack";
+		private static final String CFB_CLICK_CRAFT_ONE = "tooltip.cookingforblockheads.click_to_craft_one";
+		private static final String CFB_CLICK_CRAFT_STACK = "tooltip.cookingforblockheads.click_to_craft_stack";
 
 		private Tooltip() {
 		}
@@ -214,11 +219,11 @@ public final class BakeState {
 		}
 
 		private static void onItemTooltip(net.blay09.mods.balm.api.event.client.ItemTooltipEvent event) {
-			if (!(Minecraft.getInstance().screen instanceof RecipeBookScreen))
+			if (!(Minecraft.getInstance().screen instanceof KitchenScreen))
 				return;
 
 			ItemStack stack = event.getItemStack();
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 			if (id == null)
 				return;
 

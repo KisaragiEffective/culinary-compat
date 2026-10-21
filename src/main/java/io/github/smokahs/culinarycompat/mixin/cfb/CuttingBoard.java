@@ -1,6 +1,7 @@
 package io.github.smokahs.culinarycompat.mixin.cfb;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
@@ -8,7 +9,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,11 +21,11 @@ import vectorwing.farmersdelight.common.block.CuttingBoardBlock;
 @Mixin(value = CuttingBoardBlock.class, remap = false)
 public abstract class CuttingBoard {
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$CFB_COUNTER = new ResourceLocation("cookingforblockheads",
-			"counter");
+	private static final ResourceLocation CULINARYCOMPAT$CFB_COUNTER = ResourceLocation
+			.fromNamespaceAndPath("cookingforblockheads", "counter");
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$CFB_CORNER = new ResourceLocation("cookingforblockheads",
-			"corner");
+	private static final ResourceLocation CULINARYCOMPAT$CFB_CORNER = ResourceLocation
+			.fromNamespaceAndPath("cookingforblockheads", "corner");
 	@Unique
 	private static final VoxelShape CULINARYCOMPAT$OFFSET_SHAPE = Block.box(1.0D, -1.0D, 1.0D, 15.0D, 0.0D, 15.0D);
 
@@ -33,7 +33,7 @@ public abstract class CuttingBoard {
 	private void culinarycompat$allowOnCfbCounter(BlockState state, LevelReader level, BlockPos pos,
 			CallbackInfoReturnable<Boolean> cir) {
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation id = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation id = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		if (CULINARYCOMPAT$CFB_COUNTER.equals(id) || CULINARYCOMPAT$CFB_CORNER.equals(id)) {
 			cir.setReturnValue(true);
 		}
@@ -43,7 +43,7 @@ public abstract class CuttingBoard {
 	private void culinarycompat$offsetShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx,
 			CallbackInfoReturnable<VoxelShape> cir) {
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation belowId = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation belowId = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		if (CULINARYCOMPAT$CFB_COUNTER.equals(belowId) || CULINARYCOMPAT$CFB_CORNER.equals(belowId)) {
 			cir.setReturnValue(CULINARYCOMPAT$OFFSET_SHAPE);
 		}

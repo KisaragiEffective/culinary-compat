@@ -12,9 +12,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 
 import vectorwing.farmersdelight.common.block.entity.CuttingBoardBlockEntity;
@@ -22,7 +22,7 @@ import vectorwing.farmersdelight.common.block.entity.CuttingBoardBlockEntity;
 // stop eating bro!!!!
 public final class CuttingBoardInteract {
 	private static final TagKey<Item> KNIVES = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tools/knives"));
+			ResourceLocation.fromNamespaceAndPath("c", "tools/knives"));
 
 	private CuttingBoardInteract() {
 	}

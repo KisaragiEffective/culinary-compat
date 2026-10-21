@@ -1,60 +1,33 @@
 package io.github.smokahs.culinarycompat.mixin.cfb;
 
-import java.util.List;
+import java.util.Collection;
 
-import net.blay09.mods.cookingforblockheads.api.SourceItem;
-import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
-import net.minecraft.core.NonNullList;
+import net.blay09.mods.cookingforblockheads.api.CacheHint;
+import net.blay09.mods.cookingforblockheads.api.IngredientToken;
+import net.blay09.mods.cookingforblockheads.block.entity.MilkJarBlockEntity;
+import net.blay09.mods.cookingforblockheads.compat.Compat;
+import net.blay09.mods.cookingforblockheads.tag.ModItemTags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// bottle-sized milk items drain a quarter bucket, matching FD's 4-bottles-per-bucket ratio
-@Mixin(targets = "net.blay09.mods.cookingforblockheads.tile.MilkJarBlockEntity$MilkJarItemProvider", remap = false)
+import io.github.smokahs.culinarycompat.compat.cfb.FluidIngredients;
+
+@Mixin(targets = "net.blay09.mods.cookingforblockheads.block.entity.MilkJarBlockEntity$MilkJarItemProvider", remap = false)
 public abstract class MilkJarProvider {
-	@Shadow(remap = false)
+	@Shadow
 	@Final
-	private NonNullList<ItemStack> itemStacks;
-
-	@Unique
-	private int culinarycompat$cost(int slot) {
-		return itemStacks.get(slot).getItem() == Items.MILK_BUCKET ? 1000 : 250;
-	}
-
-	@Unique
-	private int culinarycompat$costOf(ItemStack stack) {
-		return stack.getItem() == Items.MILK_BUCKET ? 1000 : 250;
-	}
-
-	@ModifyConstant(method = "useItemStack", constant = @Constant(intValue = 1000), remap = false, require = 0)
-	private int culinarycompat$useCost(int constant, int slot, int amount, boolean simulate,
-			List<IKitchenItemProvider> inventories, boolean requireBucket) {
-		return culinarycompat$cost(slot);
-	}
-
-	@ModifyConstant(method = "getSimulatedUseCount", constant = @Constant(intValue = 1000), remap = false, require = 0)
-	private int culinarycompat$simulatedCost(int constant, int slot) {
-		return culinarycompat$cost(slot);
-	}
-
-	@ModifyConstant(method = "getStackInSlot", constant = @Constant(intValue = 1000), remap = false, require = 0)
-	private int culinarycompat$slotCost(int constant, int slot) {
-		return culinarycompat$cost(slot);
-	}
-
-	@ModifyConstant(method = "getCountInSlot", constant = @Constant(intValue = 1000), remap = false, require = 0)
-	private int culinarycompat$countCost(int constant, int slot) {
-		return culinarycompat$cost(slot);
-	}
-
-	@ModifyConstant(method = "returnItemStack", constant = @Constant(intValue = 1000), remap = false, require = 0)
-	private int culinarycompat$returnCost(int constant, ItemStack itemStack, SourceItem sourceItem) {
-		return culinarycompat$costOf(itemStack);
+	private MilkJarBlockEntity milkJar;
+	@Inject(method = "findIngredient(Lnet/minecraft/world/item/ItemStack;Ljava/util/Collection;Lnet/blay09/mods/cookingforblockheads/api/CacheHint;)Lnet/blay09/mods/cookingforblockheads/api/IngredientToken;", at = @At("HEAD"), cancellable = true)
+	private void culinarycompat$find(ItemStack stack, Collection<IngredientToken> reserved, CacheHint hint,
+			CallbackInfoReturnable<IngredientToken> cir) {
+		cir.setReturnValue(stack.is(ModItemTags.MILK)
+				? FluidIngredients.find(milkJar.getFluidTank(), Compat.getMilkFluid(), stack, reserved)
+				: null);
 	}
 }

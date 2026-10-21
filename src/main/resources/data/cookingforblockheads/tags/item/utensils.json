@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "culinarycompat:bakeware",
+    {"id": "farmersdelight:cutting_board", "required": false},
+    {"id": "farmersdelight:skillet", "required": false},
+    {"id": "farmersdelight:cooking_pot", "required": false},
+    {"id": "cookingforblockheads:oven", "required": false},
+    {"id": "croptopia:food_press", "required": false},
+    {"id": "croptopia:mortar_and_pestle", "required": false},
+    {"id": "#c:tools/knife", "required": false},
+    {"id": "#c:tool_cuttingboard", "required": false},
+    {"id": "#c:tool_pot", "required": false},
+    {"id": "#c:tool_skillet", "required": false},
+    {"id": "#c:tool_bakeware", "required": false}
+  ]
+}

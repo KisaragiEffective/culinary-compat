@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -24,14 +24,12 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.tags.ITag;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
@@ -46,7 +44,8 @@ public final class Pam {
 	}
 
 	public static final class Bakeware {
-		public static final ResourceLocation PAM_BAKEWARE_ITEM_ID = new ResourceLocation(PAM_MODID, "bakewareitem");
+		public static final ResourceLocation PAM_BAKEWARE_ITEM_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"bakewareitem");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "pam_bakeware_bridge/";
 		private static final String BRIDGE_SOURCE = "pam_bakeware";
@@ -67,7 +66,9 @@ public final class Pam {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -100,7 +101,7 @@ public final class Pam {
 				return;
 			ItemStack workstationStack = new ItemStack(ourBakeware);
 
-			Item pamBakeware = ForgeRegistries.ITEMS.getValue(PAM_BAKEWARE_ITEM_ID);
+			Item pamBakeware = BuiltInRegistries.ITEM.get(PAM_BAKEWARE_ITEM_ID);
 			ItemStack pamBakewareProbe = pamBakeware == null ? ItemStack.EMPTY : new ItemStack(pamBakeware);
 
 			List<Recipe<?>> templatesSnapshot;
@@ -150,23 +151,24 @@ public final class Pam {
 				if (stripped.isEmpty())
 					continue;
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
 				Collection<?> existing = CookingRegistry.getFoodRecipes(outputId);
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				int width = 3;
 				int height = Math.max(1, (stripped.size() + 2) / 3);
 				NonNullList<Ingredient> shaped = NonNullList.withSize(width * height, Ingredient.EMPTY);
 				for (int i = 0; i < stripped.size(); i++) {
 					shaped.set(i, stripped.get(i));
 				}
-				ShapedRecipe bridge = new ShapedRecipe(bridgeId, "", CraftingBookCategory.MISC, width, height, shaped,
-						result.copy());
+				ShapedRecipe bridge = new io.github.smokahs.culinarycompat.registry.Recipes.BridgeShaped(bridgeId, "",
+						CraftingBookCategory.MISC, width, height, shaped, result.copy());
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(stripped), result.copy(),
@@ -181,15 +183,17 @@ public final class Pam {
 	}
 
 	public static final class Cutting {
-		private static final ResourceLocation CUTTINGBOARD_TAG_ID = new ResourceLocation("forge", "tool_cuttingboard");
-		private static final ResourceLocation KNIVES_TAG_ID = new ResourceLocation("forge", "tools/knives");
-		private static final ResourceLocation CUTTINGBOARD_ITEM_ID = new ResourceLocation(PAM_MODID,
+		private static final ResourceLocation CUTTINGBOARD_TAG_ID = ResourceLocation.fromNamespaceAndPath("c",
+				"tool_cuttingboard");
+		private static final ResourceLocation KNIVES_TAG_ID = ResourceLocation.fromNamespaceAndPath("c",
+				"tools/knives");
+		private static final ResourceLocation CUTTINGBOARD_ITEM_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
 				"cuttingboarditem");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "pam_cutting_bridge/";
 		private static final String BRIDGE_SOURCE = "pam_cuttingboard";
-		private static final ResourceLocation FD_CUTTING_BOARD_ID = new ResourceLocation("farmersdelight",
-				"cutting_board");
+		private static final ResourceLocation FD_CUTTING_BOARD_ID = ResourceLocation
+				.fromNamespaceAndPath("farmersdelight", "cutting_board");
 
 		private static final Set<ResourceLocation> BRIDGED_OUTPUTS = ConcurrentHashMap.newKeySet();
 		private static final Set<ResourceLocation> EXCLUSIVE_KEYS = ConcurrentHashMap.newKeySet();
@@ -207,7 +211,9 @@ public final class Pam {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -235,10 +241,10 @@ public final class Pam {
 			EXCLUSIVE_KEYS.clear();
 			Bridges.clearBySource(BRIDGE_SOURCE);
 
-			Item workstationItem = ForgeRegistries.ITEMS.getValue(FD_CUTTING_BOARD_ID);
+			Item workstationItem = BuiltInRegistries.ITEM.get(FD_CUTTING_BOARD_ID);
 			ItemStack workstationStack = workstationItem == null ? ItemStack.EMPTY : new ItemStack(workstationItem);
 
-			Item cuttingboardItem = ForgeRegistries.ITEMS.getValue(CUTTINGBOARD_ITEM_ID);
+			Item cuttingboardItem = BuiltInRegistries.ITEM.get(CUTTINGBOARD_ITEM_ID);
 			if (cuttingboardItem == null)
 				return;
 			ItemStack cbProbe = new ItemStack(cuttingboardItem);
@@ -283,18 +289,19 @@ public final class Pam {
 					}
 				}
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
 				Collection<?> existing = CookingRegistry.getFoodRecipes(outputId);
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				Recipes.ToolBridgeShapeless bridge = new Recipes.ToolBridgeShapeless(bridgeId, "",
 						CraftingBookCategory.MISC, result.copy(), swapped, s -> s.is(knivesTag),
-						new ResourceLocation("farmersdelight", "netherite_knife"));
+						ResourceLocation.fromNamespaceAndPath("farmersdelight", "netherite_knife"));
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(swapped), result.copy(),
@@ -309,7 +316,7 @@ public final class Pam {
 		public static List<io.github.smokahs.culinarycompat.recipe.MultiCutting> buildMultiCuttingRecipes(
 				RegistryAccess registries) {
 			List<io.github.smokahs.culinarycompat.recipe.MultiCutting> out = new ArrayList<>();
-			Item cuttingboardItem = ForgeRegistries.ITEMS.getValue(CUTTINGBOARD_ITEM_ID);
+			Item cuttingboardItem = BuiltInRegistries.ITEM.get(CUTTINGBOARD_ITEM_ID);
 			if (cuttingboardItem == null) {
 				return out;
 			}
@@ -346,8 +353,10 @@ public final class Pam {
 				if (result.isEmpty()) {
 					continue;
 				}
-				ResourceLocation id = new ResourceLocation(BRIDGE_NAMESPACE,
-						"pam_multi_cutting/" + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						"pam_multi_cutting/"
+								+ io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace() + "_"
+								+ io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				out.add(new io.github.smokahs.culinarycompat.recipe.MultiCutting(id, food, result.copy()));
 			}
 			return out;
@@ -355,8 +364,9 @@ public final class Pam {
 	}
 
 	public static final class Pot {
-		public static final ResourceLocation POT_ITEM_ID = new ResourceLocation(PAM_MODID, "potitem");
-		private static final ResourceLocation FD_COOKING_POT_ID = new ResourceLocation("farmersdelight", "cooking_pot");
+		public static final ResourceLocation POT_ITEM_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID, "potitem");
+		private static final ResourceLocation FD_COOKING_POT_ID = ResourceLocation
+				.fromNamespaceAndPath("farmersdelight", "cooking_pot");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "pam_pot_bridge/";
 		private static final String BRIDGE_SOURCE = "pam_pot";
@@ -377,7 +387,9 @@ public final class Pam {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -405,12 +417,12 @@ public final class Pam {
 			EXCLUSIVE_KEYS.clear();
 			Bridges.clearBySource(BRIDGE_SOURCE);
 
-			Item fdPot = ForgeRegistries.ITEMS.getValue(FD_COOKING_POT_ID);
+			Item fdPot = BuiltInRegistries.ITEM.get(FD_COOKING_POT_ID);
 			if (fdPot == null)
 				return;
 			ItemStack workstationStack = new ItemStack(fdPot);
 
-			Item pamPot = ForgeRegistries.ITEMS.getValue(POT_ITEM_ID);
+			Item pamPot = BuiltInRegistries.ITEM.get(POT_ITEM_ID);
 			if (pamPot == null)
 				return;
 			ItemStack pamPotProbe = new ItemStack(pamPot);
@@ -454,23 +466,24 @@ public final class Pam {
 				if (stripped.isEmpty())
 					continue;
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
 				Collection<?> existing = CookingRegistry.getFoodRecipes(outputId);
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				int width = 3;
 				int height = Math.max(1, (stripped.size() + 2) / 3);
 				NonNullList<Ingredient> shaped = NonNullList.withSize(width * height, Ingredient.EMPTY);
 				for (int i = 0; i < stripped.size(); i++) {
 					shaped.set(i, stripped.get(i));
 				}
-				ShapedRecipe bridge = new ShapedRecipe(bridgeId, "", CraftingBookCategory.MISC, width, height, shaped,
-						result.copy());
+				ShapedRecipe bridge = new io.github.smokahs.culinarycompat.registry.Recipes.BridgeShaped(bridgeId, "",
+						CraftingBookCategory.MISC, width, height, shaped, result.copy());
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(stripped), result.copy(),
@@ -484,8 +497,10 @@ public final class Pam {
 	}
 
 	public static final class Skillet {
-		public static final ResourceLocation SKILLET_ITEM_ID = new ResourceLocation(PAM_MODID, "skilletitem");
-		private static final ResourceLocation FD_SKILLET_ID = new ResourceLocation("farmersdelight", "skillet");
+		public static final ResourceLocation SKILLET_ITEM_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"skilletitem");
+		private static final ResourceLocation FD_SKILLET_ID = ResourceLocation.fromNamespaceAndPath("farmersdelight",
+				"skillet");
 		private static final String BRIDGE_NAMESPACE = "culinarycompat";
 		private static final String BRIDGE_PATH_PREFIX = "pam_skillet_bridge/";
 		private static final String BRIDGE_SOURCE = "pam_skillet";
@@ -506,7 +521,9 @@ public final class Pam {
 		}
 
 		public static Set<ResourceLocation> getBridgedOutputs() {
-			return Collections.unmodifiableSet(BRIDGED_OUTPUTS);
+			return BRIDGED_OUTPUTS.isEmpty()
+					? io.github.smokahs.culinarycompat.bridges.Bridges.outputsFor(BRIDGE_SOURCE)
+					: Collections.unmodifiableSet(BRIDGED_OUTPUTS);
 		}
 
 		public static Set<ResourceLocation> getExclusiveBridgeKeys() {
@@ -534,12 +551,12 @@ public final class Pam {
 			EXCLUSIVE_KEYS.clear();
 			Bridges.clearBySource(BRIDGE_SOURCE);
 
-			Item fdSkillet = ForgeRegistries.ITEMS.getValue(FD_SKILLET_ID);
+			Item fdSkillet = BuiltInRegistries.ITEM.get(FD_SKILLET_ID);
 			if (fdSkillet == null)
 				return;
 			ItemStack workstationStack = new ItemStack(fdSkillet);
 
-			Item pamSkillet = ForgeRegistries.ITEMS.getValue(SKILLET_ITEM_ID);
+			Item pamSkillet = BuiltInRegistries.ITEM.get(SKILLET_ITEM_ID);
 			if (pamSkillet == null)
 				return;
 			ItemStack pamSkilletProbe = new ItemStack(pamSkillet);
@@ -583,23 +600,24 @@ public final class Pam {
 				if (stripped.isEmpty())
 					continue;
 
-				ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(result.getItem());
+				ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(result.getItem());
 				if (outputId == null)
 					continue;
 
 				Collection<?> existing = CookingRegistry.getFoodRecipes(outputId);
 				boolean outputHadPriorRecipe = !existing.isEmpty();
 
-				ResourceLocation bridgeId = new ResourceLocation(BRIDGE_NAMESPACE,
-						BRIDGE_PATH_PREFIX + recipe.getId().getNamespace() + "_" + recipe.getId().getPath());
+				ResourceLocation bridgeId = ResourceLocation.fromNamespaceAndPath(BRIDGE_NAMESPACE,
+						BRIDGE_PATH_PREFIX + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getNamespace()
+								+ "_" + io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe).getPath());
 				int width = 3;
 				int height = Math.max(1, (stripped.size() + 2) / 3);
 				NonNullList<Ingredient> shaped = NonNullList.withSize(width * height, Ingredient.EMPTY);
 				for (int i = 0; i < stripped.size(); i++) {
 					shaped.set(i, stripped.get(i));
 				}
-				ShapedRecipe bridge = new ShapedRecipe(bridgeId, "", CraftingBookCategory.MISC, width, height, shaped,
-						result.copy());
+				ShapedRecipe bridge = new io.github.smokahs.culinarycompat.registry.Recipes.BridgeShaped(bridgeId, "",
+						CraftingBookCategory.MISC, width, height, shaped, result.copy());
 
 				CookingRegistry.addFoodRecipe(bridge, registries);
 				Bridges.register(new Bridges.Entry(BRIDGE_SOURCE, bridgeId, new ArrayList<>(stripped), result.copy(),
@@ -614,7 +632,8 @@ public final class Pam {
 
 	public static final class CreativeTabFilter {
 		// pam dough dupes the FD one, stays hidden either way
-		private static final ResourceLocation[] HIDDEN_ITEMS = {new ResourceLocation(PAM_MODID, "doughitem")};
+		private static final ResourceLocation[] HIDDEN_ITEMS = {
+				ResourceLocation.fromNamespaceAndPath(PAM_MODID, "doughitem")};
 		private static final ResourceLocation[] TOOL_ITEMS = {Cutting.cuttingboardItemId(), Skillet.skilletItemId(),
 				Pot.potItemId(), Bakeware.PAM_BAKEWARE_ITEM_ID};
 
@@ -625,13 +644,13 @@ public final class Pam {
 		public static void onBuildTab(BuildCreativeModeTabContentsEvent event) {
 			Set<Item> hidden = new HashSet<>();
 			for (ResourceLocation id : HIDDEN_ITEMS) {
-				Item it = ForgeRegistries.ITEMS.getValue(id);
+				Item it = BuiltInRegistries.ITEM.get(id);
 				if (it != null)
 					hidden.add(it);
 			}
 			if (!Configs.Common.restorePamsTools) {
 				for (ResourceLocation id : TOOL_ITEMS) {
-					Item it = ForgeRegistries.ITEMS.getValue(id);
+					Item it = BuiltInRegistries.ITEM.get(id);
 					if (it != null)
 						hidden.add(it);
 				}
@@ -639,31 +658,29 @@ public final class Pam {
 			if (hidden.isEmpty())
 				return;
 
-			List<ItemStack> toRemove = new ArrayList<>();
-			for (java.util.Map.Entry<ItemStack, ?> entry : event.getEntries()) {
-				if (hidden.contains(entry.getKey().getItem()))
-					toRemove.add(entry.getKey());
-			}
-			for (ItemStack stack : toRemove) {
-				event.getEntries().remove(stack);
-			}
+			event.getParentEntries().removeIf(stack -> hidden.contains(stack.getItem()));
+			event.getSearchEntries().removeIf(stack -> hidden.contains(stack.getItem()));
 		}
 	}
 
 	public static final class RecipeStripper {
 		private static final TagKey<Item> CB_TAG = TagKey.create(Registries.ITEM,
-				new ResourceLocation("forge", "tool_cuttingboard"));
+				ResourceLocation.fromNamespaceAndPath("c", "tool_cuttingboard"));
 		private static final TagKey<Item> SK_TAG = TagKey.create(Registries.ITEM,
-				new ResourceLocation("forge", "tool_skillet"));
+				ResourceLocation.fromNamespaceAndPath("c", "tool_skillet"));
 		private static final TagKey<Item> PT_TAG = TagKey.create(Registries.ITEM,
-				new ResourceLocation("forge", "tool_pot"));
+				ResourceLocation.fromNamespaceAndPath("c", "tool_pot"));
 		private static final TagKey<Item> BK_TAG = TagKey.create(Registries.ITEM,
-				new ResourceLocation("forge", "tool_bakeware"));
+				ResourceLocation.fromNamespaceAndPath("c", "tool_bakeware"));
 
-		private static final ResourceLocation CB_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_cuttingboard");
-		private static final ResourceLocation SK_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_skillet");
-		private static final ResourceLocation PT_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_pot");
-		private static final ResourceLocation BK_RECIPE_ID = new ResourceLocation(PAM_MODID, "tool_bakeware");
+		private static final ResourceLocation CB_RECIPE_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"tool_cuttingboard");
+		private static final ResourceLocation SK_RECIPE_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"tool_skillet");
+		private static final ResourceLocation PT_RECIPE_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"tool_pot");
+		private static final ResourceLocation BK_RECIPE_ID = ResourceLocation.fromNamespaceAndPath(PAM_MODID,
+				"tool_bakeware");
 
 		private RecipeStripper() {
 		}
@@ -701,7 +718,7 @@ public final class Pam {
 			Set<Item> ptItems = tagItems(PT_TAG);
 			Set<Item> bkItems = tagItems(BK_TAG);
 			// fixed pam tags & recipes for bakeware
-			Item pamBakewareItem = ForgeRegistries.ITEMS.getValue(Bakeware.PAM_BAKEWARE_ITEM_ID);
+			Item pamBakewareItem = BuiltInRegistries.ITEM.get(Bakeware.PAM_BAKEWARE_ITEM_ID);
 			if (pamBakewareItem != null) {
 				bkItems.add(pamBakewareItem);
 			}
@@ -715,8 +732,8 @@ public final class Pam {
 			List<Recipe<?>> ptTemplates = new ArrayList<>();
 			List<Recipe<?>> bkTemplates = new ArrayList<>();
 
-			for (Recipe<?> recipe : rm.getRecipes()) {
-				ResourceLocation rid = recipe.getId();
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.values(rm)) {
+				ResourceLocation rid = io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe);
 				if (CB_RECIPE_ID.equals(rid) || SK_RECIPE_ID.equals(rid) || PT_RECIPE_ID.equals(rid)
 						|| BK_RECIPE_ID.equals(rid)) {
 					if (!Configs.Common.restorePamsTools) {
@@ -746,8 +763,8 @@ public final class Pam {
 			}
 
 			List<Recipe<?>> kept = new ArrayList<>();
-			for (Recipe<?> recipe : rm.getRecipes()) {
-				if (!toStrip.contains(recipe.getId())) {
+			for (Recipe<?> recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds.values(rm)) {
+				if (!toStrip.contains(io.github.smokahs.culinarycompat.recipe.RecipeIds.id(recipe))) {
 					kept.add(recipe);
 				}
 			}
@@ -760,12 +777,13 @@ public final class Pam {
 			List<io.github.smokahs.culinarycompat.recipe.MultiCutting> multi = Cutting
 					.buildMultiCuttingRecipes(server.registryAccess());
 			kept.addAll(multi);
-			rm.replaceRecipes(kept);
+			io.github.smokahs.culinarycompat.recipe.RecipeIds.replace(rm, kept);
 
 			Cutting.registerBridges(rm, server.registryAccess());
 			Skillet.registerBridges(rm, server.registryAccess());
 			Pot.registerBridges(rm, server.registryAccess());
 			Bakeware.registerBridges(rm, server.registryAccess());
+			CookingRegistry.finish();
 
 			CulinaryCompat.LOGGER.info(
 					"Pam recipe strip: removed {} recipes ({} cutting, {} skillet, {} pot, {} bakeware templates)",
@@ -773,11 +791,9 @@ public final class Pam {
 		}
 
 		private static Set<Item> tagItems(TagKey<Item> tag) {
-			ITag<Item> resolved = ForgeRegistries.ITEMS.tags().getTag(tag);
 			Set<Item> items = new HashSet<>();
-			for (Item it : resolved) {
-				items.add(it);
-			}
+			BuiltInRegistries.ITEM.getTag(tag)
+					.ifPresent(resolved -> resolved.forEach(holder -> items.add(holder.value())));
 			return items;
 		}
 

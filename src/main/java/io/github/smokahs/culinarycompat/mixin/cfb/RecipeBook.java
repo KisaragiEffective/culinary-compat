@@ -1,307 +1,34 @@
 package io.github.smokahs.culinarycompat.mixin.cfb;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
-import net.blay09.mods.cookingforblockheads.KitchenMultiBlock;
-import net.blay09.mods.cookingforblockheads.api.RecipeStatus;
-import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
-import net.blay09.mods.cookingforblockheads.menu.RecipeBookMenu;
-import net.blay09.mods.cookingforblockheads.menu.inventory.InventoryCraftBook;
-import net.blay09.mods.cookingforblockheads.registry.CookingRegistry;
-import net.blay09.mods.cookingforblockheads.registry.FoodRecipeType;
-import net.blay09.mods.cookingforblockheads.registry.recipe.FoodRecipe;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
+import net.blay09.mods.cookingforblockheads.crafting.KitchenImpl;
+import net.blay09.mods.cookingforblockheads.menu.KitchenMenu;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
-import com.google.common.collect.Multimap;
-
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import io.github.smokahs.culinarycompat.compat.cfb.BakeState;
-import io.github.smokahs.culinarycompat.compat.cfb.CFB;
-import io.github.smokahs.culinarycompat.compat.cfb.Croptopia;
-import io.github.smokahs.culinarycompat.compat.cfb.FarmersDelight;
-import io.github.smokahs.culinarycompat.compat.cfb.Pam;
-import io.github.smokahs.culinarycompat.config.Configs;
-import io.github.smokahs.culinarycompat.network.Network.BakePhase;
-import vectorwing.farmersdelight.common.block.CookingPotBlock;
-import vectorwing.farmersdelight.common.block.CuttingBoardBlock;
-import vectorwing.farmersdelight.common.block.SkilletBlock;
+import io.github.smokahs.culinarycompat.compat.cfb.KitchenBridges;
 
-@Mixin(value = RecipeBookMenu.class, remap = false)
+@Mixin(value = KitchenMenu.class, remap = false)
 public abstract class RecipeBook {
-	@Shadow(remap = false)
-	private KitchenMultiBlock multiBlock;
-	@Shadow(remap = false)
-	private InventoryCraftBook craftBook;
-	@Shadow(remap = false)
+	@Shadow
+	@Final
 	private Player player;
-
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$FD_CUTTING_BOARD = new ResourceLocation("farmersdelight",
-			"cutting_board");
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$FD_SKILLET = new ResourceLocation("farmersdelight", "skillet");
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$FD_COOKING_POT = new ResourceLocation("farmersdelight",
-			"cooking_pot");
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$BAKEWARE = new ResourceLocation("culinarycompat", "bakeware");
-	// pam's tools double as their FD counterparts when kept in the kitchen; pam's
-	// bakeware goes by id since our override drops it from forge:tool_bakeware
-	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$PAM_BAKEWARE = new ResourceLocation("pamhc2foodcore",
-			"bakewareitem");
-	@Unique
-	private static final TagKey<Item> CULINARYCOMPAT$PAM_CUTTINGBOARD = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tool_cuttingboard"));
-	@Unique
-	private static final TagKey<Item> CULINARYCOMPAT$PAM_SKILLET = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tool_skillet"));
-	@Unique
-	private static final TagKey<Item> CULINARYCOMPAT$PAM_POT = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tool_pot"));
-
-	@Redirect(method = "findAndSendItemList", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;keySet()Ljava/util/Set;", remap = false), remap = false, require = 0)
-	private Set<?> culinarycompat$filterKeys(Multimap<ResourceLocation, FoodRecipe> map) {
-		Set<ResourceLocation> keys = map.keySet();
-		Set<ResourceLocation> hidden = culinarycompat$hiddenKeysMissing();
-		if (hidden.isEmpty())
-			return keys;
-		Set<ResourceLocation> filtered = new HashSet<>(keys);
-		filtered.removeAll(hidden);
-		return filtered;
-	}
-
-	@Redirect(method = "findAndSendRecipes", at = @At(value = "INVOKE", target = "Lnet/blay09/mods/cookingforblockheads/registry/CookingRegistry;getFoodRecipes(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Collection;", remap = false), remap = false, require = 0)
-	private Collection<FoodRecipe> culinarycompat$filterRecipesForOutput(ItemStack outputItem) {
-		Collection<FoodRecipe> col = CookingRegistry.getFoodRecipes(outputItem);
-		if (col.isEmpty())
-			return col;
-		Set<ResourceLocation> hidden = culinarycompat$hiddenKeysMissing();
-		if (hidden.isEmpty())
-			return col;
-		ResourceLocation id = ForgeRegistries.ITEMS.getKey(outputItem.getItem());
-		if (id != null && hidden.contains(id)) {
-			return Collections.emptyList();
-		}
-		return col;
-	}
-
-	@Redirect(method = "findAndSendItemList", at = @At(value = "INVOKE", target = "Lnet/blay09/mods/cookingforblockheads/registry/CookingRegistry;getRecipeStatus(Lnet/blay09/mods/cookingforblockheads/registry/recipe/FoodRecipe;Ljava/util/List;Z)Lnet/blay09/mods/cookingforblockheads/api/RecipeStatus;", remap = false), remap = false, require = 0)
-	private RecipeStatus culinarycompat$wrapStatusList(FoodRecipe recipe, List<IKitchenItemProvider> inventories,
-			boolean hasOven) {
-		return culinarycompat$adjustStatus(CookingRegistry.getRecipeStatus(recipe, inventories, hasOven), recipe);
-	}
-
-	@Redirect(method = "findAndSendRecipes", at = @At(value = "INVOKE", target = "Lnet/blay09/mods/cookingforblockheads/registry/CookingRegistry;getRecipeStatus(Lnet/blay09/mods/cookingforblockheads/registry/recipe/FoodRecipe;Ljava/util/List;Z)Lnet/blay09/mods/cookingforblockheads/api/RecipeStatus;", remap = false), remap = false, require = 0)
-	private RecipeStatus culinarycompat$wrapStatusRecipes(FoodRecipe recipe, List<IKitchenItemProvider> inventories,
-			boolean hasOven) {
-		return culinarycompat$adjustStatus(CookingRegistry.getRecipeStatus(recipe, inventories, hasOven), recipe);
-	}
-
-	@Inject(method = "tryCraft", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
-	private void culinarycompat$blockTryCraft(ItemStack outputItem, FoodRecipeType recipeType,
-			NonNullList<ItemStack> craftMatrix, boolean stack, CallbackInfo ci) {
-		if (recipeType != FoodRecipeType.CRAFTING)
-			return;
-		ResourceLocation id = ForgeRegistries.ITEMS.getKey(outputItem.getItem());
-		if (id == null)
-			return;
-		if (culinarycompat$toolsMissingKeys().contains(id)) {
+	@Shadow
+	@Final
+	private KitchenImpl kitchen;
+	@Inject(method = "craft", at = @At("HEAD"), cancellable = true)
+	private void culinarycompat$gate(ResourceLocation id, List<ItemStack> inputs, boolean fullStack, boolean inventory,
+			CallbackInfo ci) {
+		if (!KitchenBridges.hasWorkstation(kitchen, id, player))
 			ci.cancel();
-			return;
-		}
-		if (!(player instanceof ServerPlayer sp))
-			return;
-		if (!Pam.Bakeware.getBridgedOutputs().contains(id) && !Croptopia.getBakewareOutputs().contains(id))
-			return;
-		if (!Configs.Common.bakewareEnabled)
-			return;
-
-		UUID pid = sp.getUUID();
-		BakeState.Pending pending = BakeState.Manager.get(pid);
-		if (pending != null && pending.phase == BakePhase.BAKING) {
-			ci.cancel();
-			return;
-		}
-		if (pending != null && pending.phase == BakePhase.CONFIRM && id.equals(pending.outputId)) {
-			java.util.List<ItemStack> snapshot = new ArrayList<>();
-			for (ItemStack s : craftMatrix) {
-				snapshot.add(s == null ? ItemStack.EMPTY : s.copy());
-			}
-			ItemStack result = craftBook.tryCraft(outputItem, craftMatrix, player, multiBlock);
-			if (result.isEmpty()) {
-				BakeState.Manager.clear(pid);
-			} else {
-				BakeState.Manager.setBaking(sp, id, result, snapshot);
-			}
-			ci.cancel();
-			return;
-		}
-		BakeState.Manager.setConfirm(sp, id);
-		ci.cancel();
-	}
-
-	// play a cook sound on kitchen craft
-	@Redirect(method = "tryCraft", at = @At(value = "INVOKE", target = "Lnet/blay09/mods/cookingforblockheads/menu/inventory/InventoryCraftBook;tryCraft(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/entity/player/Player;Lnet/blay09/mods/cookingforblockheads/KitchenMultiBlock;)Lnet/minecraft/world/item/ItemStack;", remap = false), remap = false, require = 0)
-	private ItemStack culinarycompat$craftWithSound(InventoryCraftBook book, ItemStack outputItem,
-			NonNullList<ItemStack> craftMatrix, Player craftingPlayer, KitchenMultiBlock kitchen) {
-		ItemStack result = book.tryCraft(outputItem, craftMatrix, craftingPlayer, kitchen);
-		if (!result.isEmpty() && !craftingPlayer.level().isClientSide()) {
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(outputItem.getItem());
-			if (id != null && !culinarycompat$isToolOutput(id)) {
-				craftingPlayer.level().playSound(null, craftingPlayer.getX(), craftingPlayer.getY(),
-						craftingPlayer.getZ(), SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS, 0.8f, 1.0f);
-			}
-		}
-		return result;
-	}
-
-	@Unique
-	private static boolean culinarycompat$isToolOutput(ResourceLocation id) {
-		return FarmersDelight.Cutting.getBridgedOutputs().contains(id) || Pam.Cutting.getBridgedOutputs().contains(id)
-				|| Croptopia.getKnifeOutputs().contains(id) || Pam.Skillet.getBridgedOutputs().contains(id)
-				|| Croptopia.getFryingPanOutputs().contains(id) || Pam.Pot.getBridgedOutputs().contains(id)
-				|| FarmersDelight.Pot.getBridgedOutputs().contains(id) || Croptopia.getCookingPotOutputs().contains(id)
-				|| Pam.Bakeware.getBridgedOutputs().contains(id) || Croptopia.getFoodPressOutputs().contains(id)
-				|| Croptopia.getMortarOutputs().contains(id) || Croptopia.getBakewareOutputs().contains(id);
-	}
-
-	@Unique
-	private RecipeStatus culinarycompat$adjustStatus(RecipeStatus status, FoodRecipe recipe) {
-		if (status != RecipeStatus.AVAILABLE)
-			return status;
-		ResourceLocation outputId = ForgeRegistries.ITEMS.getKey(recipe.getOutputItem().getItem());
-		if (outputId == null)
-			return status;
-		if (culinarycompat$toolsMissingKeys().contains(outputId)) {
-			return RecipeStatus.MISSING_TOOLS;
-		}
-		return status;
-	}
-
-	@Unique
-	private Set<ResourceLocation> culinarycompat$hiddenKeysMissing() {
-		return Collections.emptySet();
-	}
-
-	@Unique
-	private Set<ResourceLocation> culinarycompat$toolsMissingKeys() {
-		Set<ResourceLocation> tools = new HashSet<>();
-		if (!culinarycompat$kitchenHas(CuttingBoardBlock.class, CULINARYCOMPAT$FD_CUTTING_BOARD)
-				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_CUTTINGBOARD)) {
-			tools.addAll(FarmersDelight.Cutting.getBridgedOutputs());
-			tools.addAll(Pam.Cutting.getBridgedOutputs());
-			tools.addAll(Croptopia.getKnifeOutputs());
-		}
-		if (!culinarycompat$kitchenHas(SkilletBlock.class, CULINARYCOMPAT$FD_SKILLET)
-				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_SKILLET)) {
-			tools.addAll(Pam.Skillet.getBridgedOutputs());
-			tools.addAll(Croptopia.getFryingPanOutputs());
-		}
-		if (!culinarycompat$kitchenHas(CookingPotBlock.class, CULINARYCOMPAT$FD_COOKING_POT)
-				&& !culinarycompat$kitchenHasTagged(CULINARYCOMPAT$PAM_POT)) {
-			tools.addAll(Pam.Pot.getBridgedOutputs());
-			tools.addAll(FarmersDelight.Pot.getBridgedOutputs());
-			tools.addAll(Croptopia.getCookingPotOutputs());
-		}
-		if (!culinarycompat$memberPresent(CULINARYCOMPAT$BAKEWARE)
-				&& !culinarycompat$kitchenHasItem(CULINARYCOMPAT$BAKEWARE)
-				&& !culinarycompat$kitchenHasItem(CULINARYCOMPAT$PAM_BAKEWARE)) {
-			tools.addAll(Pam.Bakeware.getBridgedOutputs());
-			tools.addAll(Croptopia.getBakewareOutputs());
-		}
-		if (!Croptopia.getFoodPressOutputs().isEmpty() && !culinarycompat$kitchenHasItem(Croptopia.FOOD_PRESS_ITEM)) {
-			tools.addAll(Croptopia.getFoodPressOutputs());
-		}
-		if (!Croptopia.getMortarOutputs().isEmpty() && !culinarycompat$kitchenHasItem(Croptopia.MORTAR_ITEM)) {
-			tools.addAll(Croptopia.getMortarOutputs());
-		}
-		return tools;
-	}
-
-	@Unique
-	private boolean culinarycompat$kitchenHasTagged(TagKey<Item> tag) {
-		if (multiBlock == null)
-			return false;
-		List<IKitchenItemProvider> providers = ((CFB.KitchenMemberView) multiBlock)
-				.culinarycompat$getKitchenItemProviders();
-		for (IKitchenItemProvider provider : providers) {
-			int slots = provider.getSlots();
-			for (int i = 0; i < slots; i++) {
-				ItemStack stack = provider.getStackInSlot(i);
-				if (!stack.isEmpty() && stack.is(tag)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Unique
-	private boolean culinarycompat$kitchenHasItem(ResourceLocation itemId) {
-		if (multiBlock == null)
-			return false;
-		List<IKitchenItemProvider> providers = ((CFB.KitchenMemberView) multiBlock)
-				.culinarycompat$getKitchenItemProviders();
-		for (IKitchenItemProvider provider : providers) {
-			int slots = provider.getSlots();
-			for (int i = 0; i < slots; i++) {
-				ItemStack stack = provider.getStackInSlot(i);
-				if (!stack.isEmpty() && itemId.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()))) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Unique
-	private boolean culinarycompat$memberPresent(ResourceLocation id) {
-		if (multiBlock == null)
-			return false;
-		Set<ResourceLocation> members = ((CFB.KitchenMemberView) multiBlock).culinarycompat$getMemberBlocks();
-		return members.contains(id);
-	}
-
-	// any block extending the given FD class (addon pots, skillets, etc) should
-	// count as valid kitchen 'members'
-	@Unique
-	private boolean culinarycompat$kitchenHas(Class<?> blockClass, ResourceLocation fastpathId) {
-		if (multiBlock == null)
-			return false;
-		Set<ResourceLocation> members = ((CFB.KitchenMemberView) multiBlock).culinarycompat$getMemberBlocks();
-		if (members.contains(fastpathId))
-			return true;
-		for (ResourceLocation memberId : members) {
-			Block block = ForgeRegistries.BLOCKS.getValue(memberId);
-			if (block != null && blockClass.isInstance(block)) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

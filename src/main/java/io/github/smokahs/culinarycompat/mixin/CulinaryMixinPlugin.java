@@ -17,6 +17,16 @@ public class CulinaryMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+		try {
+			MixinService.getService().getBytecodeProvider().getClassNode(targetClassName);
+			if (mixinClassName.contains(".cfb.") || mixinClassName.endsWith(".client.RecipeBook")) {
+				MixinService.getService().getBytecodeProvider()
+						.getClassNode("net.blay09.mods.cookingforblockheads.crafting.KitchenImpl");
+				MixinService.getService().getBytecodeProvider().getClassNode(FD_CUTTING_BOARD_ENTITY);
+			}
+		} catch (Exception missingOptionalMod) {
+			return false;
+		}
 		if (mixinClassName.endsWith(".fd.CuttingBoardCap")) {
 			return fdAddItemReturnsItemStack();
 		}
