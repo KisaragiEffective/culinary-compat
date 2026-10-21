@@ -6,9 +6,10 @@ import javax.annotation.Nullable;
 
 import net.blay09.mods.balm.api.provider.BalmProvider;
 import net.blay09.mods.balm.common.BalmBlockEntity;
-import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
+import net.blay09.mods.cookingforblockheads.api.KitchenItemProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -29,8 +30,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 
 import appeng.api.implementations.blockentities.IWirelessAccessPoint;
@@ -72,7 +71,7 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 
 	@Override
 	public List<BalmProvider<?>> getProviders() {
-		return Lists.newArrayList(new BalmProvider<>(IKitchenItemProvider.class, itemProvider));
+		return Lists.newArrayList(new BalmProvider<>(KitchenItemProvider.class, itemProvider));
 	}
 
 	public Mode getMode() {
@@ -129,7 +128,7 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 	@Override
 	public void returnToMainMenu(Player player, ISubMenu subMenu) {
 		if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
-			net.neoforged.neoforge.network.NetworkHooks.openScreen(sp, this, buf -> buf.writeBlockPos(getBlockPos()));
+			sp.openMenu(this, buf -> buf.writeBlockPos(getBlockPos()));
 		}
 	}
 
@@ -164,27 +163,20 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 	}
 
 	public void applyDataFromItemToBlockEntity(ItemStack stack) {
-		var tag = stack.getTag();
-		if (tag != null && tag.contains(StationItem.TAG_ACCESS_POINT_POS, Tag.TAG_COMPOUND)) {
-			accessPointPos = GlobalPos.CODEC.decode(NbtOps.INSTANCE, tag.get(StationItem.TAG_ACCESS_POINT_POS)).result()
-					.map(Pair::getFirst).orElse(null);
-			setNetworkProperties();
-		} else {
-			accessPointPos = null;
-		}
+		accessPointPos = stack.get(io.github.smokahs.culinarycompat.registry.Components.ACCESS_POINT.get());
+		setNetworkProperties();
 		setChanged();
 	}
 
 	public void applyDataFromBlockEntityToItem(ItemStack stack) {
 		if (accessPointPos != null) {
-			GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, accessPointPos).result()
-					.ifPresent(tagValue -> stack.getOrCreateTag().put(StationItem.TAG_ACCESS_POINT_POS, tagValue));
+			stack.set(io.github.smokahs.culinarycompat.registry.Components.ACCESS_POINT.get(), accessPointPos);
 		}
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		if (accessPointPos != null) {
 			GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, accessPointPos).result()
 					.ifPresent(tagValue -> tag.put(StationItem.TAG_ACCESS_POINT_POS, tagValue));
@@ -195,8 +187,8 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		if (tag.contains(StationItem.TAG_ACCESS_POINT_POS)) {
 			accessPointPos = GlobalPos.CODEC.decode(NbtOps.INSTANCE, tag.get(StationItem.TAG_ACCESS_POINT_POS)).result()
 					.map(Pair::getFirst).orElse(null);
@@ -309,7 +301,10 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 	// preserves the access-point link NBT through pickup
 	public static class LootFunction extends LootItemConditionalFunction {
 
-		public LootFunction(LootItemCondition[] conditions) {
+		public static final com.mojang.serialization.MapCodec<LootFunction> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder
+				.mapCodec(instance -> commonFields(instance).apply(instance, LootFunction::new));
+
+		public LootFunction(List<LootItemCondition> conditions) {
 			super(conditions);
 		}
 
@@ -323,16 +318,9 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 		}
 
 		@Override
-		public LootItemFunctionType getType() {
+		public LootItemFunctionType<LootFunction> getType() {
 			return LootFunctions.AE2_KITCHEN_STATION.get();
 		}
 
-		public static class Serializer extends LootItemConditionalFunction.Serializer<LootFunction> {
-			@Override
-			public LootFunction deserialize(JsonObject object, JsonDeserializationContext ctx,
-					LootItemCondition[] conditions) {
-				return new LootFunction(conditions);
-			}
-		}
 	}
 }

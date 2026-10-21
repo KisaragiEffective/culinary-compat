@@ -1,150 +1,88 @@
 package io.github.smokahs.culinarycompat.compat.ae2;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 
-import javax.annotation.Nullable;
-
-import net.blay09.mods.cookingforblockheads.api.IngredientPredicateWithCache;
-import net.blay09.mods.cookingforblockheads.api.SourceItem;
-import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
-import net.blay09.mods.cookingforblockheads.api.capability.IngredientPredicate;
+import net.blay09.mods.cookingforblockheads.api.CacheHint;
+import net.blay09.mods.cookingforblockheads.api.IngredientToken;
+import net.blay09.mods.cookingforblockheads.api.KitchenItemProvider;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.storage.MEStorage;
 import appeng.me.helpers.MachineSource;
 
-// cfb side stuff
-public class ItemProvider implements IKitchenItemProvider {
-
-	private final StationBlockEntity blockEntity;
-	private final HashMap<String, Integer> usedStackSizes;
-
-	public ItemProvider(StationBlockEntity blockEntity) {
-		this.blockEntity = blockEntity;
-		this.usedStackSizes = new HashMap<>();
+/**
+ * Provides component-aware, reservable ingredient tokens backed by the linked
+ * ME network.
+ */
+public final class ItemProvider implements KitchenItemProvider {
+	private final StationBlockEntity station;
+	public ItemProvider(StationBlockEntity station) {
+		this.station = station;
 	}
-
-	public MEStorage getNetworkStorage() {
-		if (!blockEntity.getMode().allowsAEToCFB()) {
+	private MEStorage storage() {
+		return station.getMode().allowsAEToCFB() ? station.getNetworkStorage() : null;
+	}
+	@Override
+	public IngredientToken findIngredient(Ingredient ingredient, Collection<IngredientToken> reserved, CacheHint hint) {
+		var storage = storage();
+		if (storage == null)
 			return null;
-		}
-		return this.blockEntity.getNetworkStorage();
-	}
-
-	@Override
-	public void resetSimulation() {
-		usedStackSizes.replaceAll((n, v) -> 0);
-	}
-
-	@Override
-	public int getSimulatedUseCount(int slot) {
-		return 0;
-	}
-
-	public int getSimulatedUseCount(String key) {
-		return usedStackSizes.getOrDefault(key, 0);
-	}
-
-	@Override
-	public ItemStack useItemStack(int slot, int amount, boolean simulate, List<IKitchenItemProvider> inventories,
-			boolean requireBucket) {
-		return ItemStack.EMPTY;
-	}
-
-	public void useItemStack(ItemStack itemStack, int amount, boolean simulate, List<IKitchenItemProvider> inventories,
-			boolean requireBucket) {
-		MEStorage storage = getNetworkStorage();
-		if (storage == null) {
-			return;
-		}
-		String itemRegistryName = ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
-		if (itemStack.getCount() - (simulate ? usedStackSizes.getOrDefault(itemRegistryName, 0) : 0) >= amount) {
-			var result = storage.extract(AEItemKey.of(itemStack), amount,
-					simulate ? Actionable.SIMULATE : Actionable.MODULATE,
-					new MachineSource(blockEntity.getActionHost()));
-			if (simulate && result > 0) {
-				usedStackSizes.put(itemRegistryName, usedStackSizes.getOrDefault(itemRegistryName, 0) + (int) result);
-			}
-		}
-	}
-
-	@Override
-	public ItemStack returnItemStack(ItemStack itemStack, SourceItem sourceItem) {
-		MEStorage storage = getNetworkStorage();
-		if (storage == null) {
-			return itemStack;
-		}
-		var insertResult = storage.insert(AEItemKey.of(itemStack), itemStack.getCount(), Actionable.MODULATE,
-				new MachineSource(blockEntity.getActionHost()));
-		if (insertResult > 0) {
-			itemStack.setCount(itemStack.getCount() - (int) insertResult);
-		}
-		return itemStack;
-	}
-
-	@Override
-	public int getSlots() {
-		return getNetworkStorage() != null ? getNetworkStorage().getAvailableStacks().size() : 0;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int slot) {
-		return ItemStack.EMPTY;
-	}
-
-	@Override
-	public ItemStack returnItemStack(ItemStack itemStack) {
-		return itemStack;
-	}
-
-	@Nullable
-	@Override
-	public SourceItem findSource(IngredientPredicate predicate, int maxAmount, List<IKitchenItemProvider> inventories,
-			boolean requireBucket, boolean simulate) {
-		if (getNetworkStorage() != null) {
-			if (predicate instanceof IngredientPredicateWithCache predicateWithItems) {
-				for (var ingredient : predicateWithItems.getItems()) {
-					var ingredientKey = AEItemKey.of(ingredient);
-					var ingredientAmount = getNetworkStorage().getAvailableStacks().get(ingredientKey);
-					if (ingredientAmount > 0 && predicate.test(ingredientKey.toStack((int) ingredientAmount),
-							(int) ingredientAmount - getSimulatedUseCount(ingredient.getDescriptionId()))) {
-						return new SourceItem(this, 0, ingredientKey.toStack((int) ingredientAmount).copy());
-					}
-				}
+		for (var candidate : storage.getAvailableStacks()) {
+			if (candidate.getKey() instanceof AEItemKey key && ingredient.test(key.toStack())) {
+				var token = findIngredient(key.toStack(), reserved, hint);
+				if (token != null)
+					return token;
 			}
 		}
 		return null;
 	}
-
-	@Nullable
 	@Override
-	public SourceItem findSourceAndMarkAsUsed(IngredientPredicate predicate, int maxAmount,
-			List<IKitchenItemProvider> inventories, boolean requireBucket, boolean simulate) {
-		SourceItem sourceItem = findSource(predicate, maxAmount, inventories, requireBucket, simulate);
-		if (sourceItem != null) {
-			useItemStack(sourceItem.getSourceStack(), Math.min(sourceItem.getSourceStack().getCount(), maxAmount),
-					simulate, inventories, requireBucket);
-		}
-		return sourceItem;
+	public IngredientToken findIngredient(ItemStack stack, Collection<IngredientToken> reserved, CacheHint hint) {
+		var storage = storage();
+		if (storage == null || stack.isEmpty())
+			return null;
+		AEItemKey key = AEItemKey.of(stack);
+		long used = reserved.stream()
+				.filter(token -> token instanceof Token t && t.owner() == this && t.key.equals(key)).count();
+		long available = storage.extract(key, used + 1, Actionable.SIMULATE,
+				new MachineSource(station.getActionHost()));
+		return available > used ? new Token(key) : null;
 	}
-
 	@Override
-	public void consumeSourceItem(SourceItem sourceItem, int maxAmount, List<IKitchenItemProvider> inventories,
-			boolean requireContainer) {
-		if (sourceItem.getSourceSlot() < 0) {
-			return;
-		}
-		useItemStack(sourceItem.getSourceStack(), maxAmount, false, inventories, requireContainer);
+	public CacheHint getCacheHint(IngredientToken token) {
+		return CacheHint.NONE;
 	}
-
-	@Override
-	public void markAsUsed(SourceItem sourceItem, int maxAmount, List<IKitchenItemProvider> inventories,
-			boolean requireBucket) {
-		useItemStack(sourceItem.getSourceStack(), Math.min(sourceItem.getSourceStack().getCount(), maxAmount), true,
-				inventories, requireBucket);
+	private final class Token implements IngredientToken {
+		private final AEItemKey key;
+		private Token(AEItemKey key) {
+			this.key = key;
+		}
+		private ItemProvider owner() {
+			return ItemProvider.this;
+		}
+		@Override
+		public ItemStack peek() {
+			return key.toStack();
+		}
+		@Override
+		public ItemStack consume() {
+			var storage = storage();
+			return storage != null
+					&& storage.extract(key, 1, Actionable.MODULATE, new MachineSource(station.getActionHost())) == 1
+							? key.toStack()
+							: ItemStack.EMPTY;
+		}
+		@Override
+		public ItemStack restore(ItemStack stack) {
+			var storage = storage();
+			if (storage == null || stack.isEmpty())
+				return stack;
+			long inserted = storage.insert(AEItemKey.of(stack), stack.getCount(), Actionable.MODULATE,
+					new MachineSource(station.getActionHost()));
+			return stack.copyWithCount(stack.getCount() - (int) inserted);
+		}
 	}
 }

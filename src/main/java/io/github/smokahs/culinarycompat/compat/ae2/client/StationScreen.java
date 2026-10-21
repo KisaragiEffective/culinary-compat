@@ -17,7 +17,6 @@ import io.github.smokahs.culinarycompat.compat.ae2.StationMenu;
 import io.github.smokahs.culinarycompat.compat.ae2.StationSettingsPacket;
 import io.github.smokahs.culinarycompat.compat.ae2.StationSettingsPacket.Action;
 import io.github.smokahs.culinarycompat.compat.ae2.ViewMode;
-import io.github.smokahs.culinarycompat.network.Network;
 
 // tried matching ae2 panels whatever
 public class StationScreen extends AbstractContainerScreen<StationMenu> {
@@ -63,11 +62,13 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
 	}
 
 	private static ItemStack wrenchIcon() {
-		return new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation("ae2", "certus_quartz_wrench")));
+		return new ItemStack(
+				BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("ae2", "certus_quartz_wrench")));
 	}
 
 	private void sendAction(Action action, int value) {
-		Network.CHANNEL.sendToServer(new StationSettingsPacket(menu.getPos(), action, value));
+		net.neoforged.neoforge.network.PacketDistributor
+				.sendToServer(new StationSettingsPacket(menu.getPos(), action, value));
 	}
 
 	@Override

@@ -1,16 +1,17 @@
 package io.github.smokahs.culinarycompat.compat.ae2;
 
+import java.util.function.Supplier;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.neoforge.common.extensions.IForgeMenuType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
@@ -20,19 +21,19 @@ public final class Bridge {
 	public static final String CFB = "cookingforblockheads";
 	public static final String BALM = "balm";
 
-	public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
+	public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK,
 			CulinaryCompat.MODID);
-	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,
+	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM,
 			CulinaryCompat.MODID);
 	public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister
-			.create(ForgeRegistries.BLOCK_ENTITY_TYPES, CulinaryCompat.MODID);
-	public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
+			.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, CulinaryCompat.MODID);
+	public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(BuiltInRegistries.MENU,
 			CulinaryCompat.MODID);
 
-	public static RegistryObject<Block> KITCHEN_STATION;
-	public static RegistryObject<Item> KITCHEN_STATION_ITEM;
-	public static RegistryObject<BlockEntityType<StationBlockEntity>> KITCHEN_STATION_BE;
-	public static RegistryObject<MenuType<StationMenu>> KITCHEN_STATION_MENU;
+	public static Supplier<Block> KITCHEN_STATION;
+	public static Supplier<Item> KITCHEN_STATION_ITEM;
+	public static Supplier<BlockEntityType<StationBlockEntity>> KITCHEN_STATION_BE;
+	public static Supplier<MenuType<StationMenu>> KITCHEN_STATION_MENU;
 
 	private static boolean active = false;
 
@@ -54,7 +55,7 @@ public final class Bridge {
 				() -> new StationItem((StationBlock) KITCHEN_STATION.get(), new Item.Properties()));
 		KITCHEN_STATION_BE = BLOCK_ENTITIES.register("ae2_kitchen_station",
 				() -> BlockEntityType.Builder.of(StationBlockEntity::new, KITCHEN_STATION.get()).build(null));
-		KITCHEN_STATION_MENU = MENUS.register("ae2_kitchen_station", () -> IForgeMenuType.create(StationMenu::new));
+		KITCHEN_STATION_MENU = MENUS.register("ae2_kitchen_station", () -> IMenuTypeExtension.create(StationMenu::new));
 
 		BLOCKS.register(modEventBus);
 		ITEMS.register(modEventBus);

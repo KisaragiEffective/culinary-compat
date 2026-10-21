@@ -1,7 +1,6 @@
 package io.github.smokahs.culinarycompat.compat.ae2;
 
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,13 +23,12 @@ public class StationItem extends BlockItem {
 
 		@Override
 		public void link(ItemStack itemStack, GlobalPos pos) {
-			GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, pos).result()
-					.ifPresent(tagValue -> itemStack.getOrCreateTag().put(TAG_ACCESS_POINT_POS, tagValue));
+			itemStack.set(io.github.smokahs.culinarycompat.registry.Components.ACCESS_POINT.get(), pos);
 		}
 
 		@Override
 		public void unlink(ItemStack itemStack) {
-			itemStack.removeTagKey(TAG_ACCESS_POINT_POS);
+			itemStack.remove(io.github.smokahs.culinarycompat.registry.Components.ACCESS_POINT.get());
 		}
 	}
 }

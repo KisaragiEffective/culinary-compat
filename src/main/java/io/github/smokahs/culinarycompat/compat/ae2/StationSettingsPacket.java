@@ -1,16 +1,26 @@
 package io.github.smokahs.culinarycompat.compat.ae2;
 
-import java.util.function.Supplier;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 // server side
 
-public record StationSettingsPacket(BlockPos pos, Action action, int value) {
+public record StationSettingsPacket(BlockPos pos, Action action, int value) implements CustomPacketPayload {
+	public static final Type<StationSettingsPacket> TYPE = new Type<>(
+			ResourceLocation.fromNamespaceAndPath("culinarycompat", "station_settings"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, StationSettingsPacket> STREAM_CODEC = StreamCodec
+			.of((buf, msg) -> encode(msg, buf), StationSettingsPacket::decode);
+	@Override
+	public Type<StationSettingsPacket> type() {
+		return TYPE;
+	}
 
 	public enum Action {
 		SET_MODE, SET_PRIORITY, SET_VIEW, OPEN_PRIORITY;
@@ -34,10 +44,9 @@ public record StationSettingsPacket(BlockPos pos, Action action, int value) {
 		return new StationSettingsPacket(pos, action, value);
 	}
 
-	public static void handle(StationSettingsPacket msg, Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ServerPlayer player = ctx.get().getSender();
-			if (player == null) {
+	public static void handle(StationSettingsPacket msg, IPayloadContext ctx) {
+		ctx.enqueueWork(() -> {
+			if (!(ctx.player() instanceof ServerPlayer player)) {
 				return;
 			}
 			if (player.distanceToSqr(msg.pos.getX() + 0.5, msg.pos.getY() + 0.5, msg.pos.getZ() + 0.5) > 64.0) {
@@ -60,6 +69,5 @@ public record StationSettingsPacket(BlockPos pos, Action action, int value) {
 				case OPEN_PRIORITY -> station.openPriorityMenu(player);
 			}
 		});
-		ctx.get().setPacketHandled(true);
 	}
 }

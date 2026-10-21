@@ -4,15 +4,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import net.blay09.mods.cookingforblockheads.block.BlockKitchen;
+import net.blay09.mods.cookingforblockheads.block.BaseKitchenBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -33,10 +33,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.network.NetworkHooks;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
-public class StationBlock extends BlockKitchen {
+public class StationBlock extends BaseKitchenBlock {
 
 	public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
 
@@ -59,13 +57,12 @@ public class StationBlock extends BlockKitchen {
 		if (belowState.isFaceSturdy(level, below, Direction.UP)) {
 			return true;
 		}
-		ResourceLocation id = ForgeRegistries.BLOCKS.getKey(belowState.getBlock());
+		ResourceLocation id = BuiltInRegistries.BLOCK.getKey(belowState.getBlock());
 		return id != null && "cookingforblockheads".equals(id.getNamespace()) && "cooking_table".equals(id.getPath());
 	}
 
 	public StationBlock() {
-		super(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(2.5f),
-				Bridge.KITCHEN_STATION.getId());
+		super(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(2.5f));
 		registerDefaultState(getStateDefinition().any().setValue(CONNECTED, false));
 	}
 
@@ -115,24 +112,23 @@ public class StationBlock extends BlockKitchen {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+	public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
 			BlockHitResult hit) {
 		if (level.isClientSide) {
 			return InteractionResult.SUCCESS;
 		}
 		if (player instanceof ServerPlayer sp && level.getBlockEntity(pos) instanceof StationBlockEntity station) {
-			NetworkHooks.openScreen(sp, station, buf -> buf.writeBlockPos(pos));
+			sp.openMenu(station, buf -> buf.writeBlockPos(pos));
 		}
 		return InteractionResult.CONSUME;
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip,
-			TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext level,
+			List<Component> tooltip, TooltipFlag flag) {
 		super.appendHoverText(stack, level, tooltip, flag);
 		// green "Linked" tooltip like terminals, worth it
-		var tag = stack.getTag();
-		if (tag != null && tag.contains(StationItem.TAG_ACCESS_POINT_POS)) {
+		if (stack.has(io.github.smokahs.culinarycompat.registry.Components.ACCESS_POINT.get())) {
 			tooltip.add(Component.translatable("tooltip.culinarycompat:ae2_kitchen_station.linked")
 					.withStyle(ChatFormatting.GREEN));
 		}
@@ -143,5 +139,10 @@ public class StationBlock extends BlockKitchen {
 			tooltip.add(Component.translatable("tooltip.culinarycompat:ae2_kitchen_station.hold_shift")
 					.withStyle(ChatFormatting.DARK_GRAY));
 		}
+	}
+
+	@Override
+	protected com.mojang.serialization.MapCodec<? extends StationBlock> codec() {
+		return simpleCodec(properties -> new StationBlock());
 	}
 }
