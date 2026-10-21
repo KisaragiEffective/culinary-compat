@@ -64,16 +64,16 @@ public abstract class CuttingBoardEntity implements MultiCuttingExtras {
 	};
 
 	private static final TagKey<Item> CULINARYCOMPAT$KNIVES_TAG = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tools/knives"));
-	private static final ResourceLocation CULINARYCOMPAT$NETHERITE_KNIFE_ID = new ResourceLocation("farmersdelight",
-			"netherite_knife");
+			ResourceLocation.fromNamespaceAndPath("c", "tools/knives"));
+	private static final ResourceLocation CULINARYCOMPAT$NETHERITE_KNIFE_ID = ResourceLocation
+			.fromNamespaceAndPath("farmersdelight", "netherite_knife");
 
 	@Unique
 	private static boolean culinarycompat$isImmuneKnife(ItemStack stack) {
 		if (!Configs.Common.opNetheriteKnife) {
 			return false;
 		}
-		ResourceLocation id = net.neoforged.neoforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+		ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
 		return CULINARYCOMPAT$NETHERITE_KNIFE_ID.equals(id);
 	}
 
@@ -163,8 +163,9 @@ public abstract class CuttingBoardEntity implements MultiCuttingExtras {
 			}
 		}
 		RecipeWrapper wrapper = new RecipeWrapper(culinarycompat$wrapperFor(all));
-		Optional<MultiCutting> match = level.getRecipeManager().getRecipeFor(Recipes.MULTI_CUTTING_TYPE.get(), wrapper,
-				level);
+		Optional<MultiCutting> match = level.getRecipeManager()
+				.getRecipeFor(Recipes.MULTI_CUTTING_TYPE.get(), wrapper, level)
+				.map(net.minecraft.world.item.crafting.RecipeHolder::value);
 		if (match.isEmpty()) {
 			if (player != null) {
 				player.displayClientMessage(net.minecraft.network.chat.Component.literal("That doesn't seem right..."),
@@ -182,9 +183,10 @@ public abstract class CuttingBoardEntity implements MultiCuttingExtras {
 				pos.getZ() + 0.5 + dir.getStepZ() * 0.2, dir.getStepX() * 0.2, 0.0, dir.getStepZ() * 0.2);
 		if (!culinarycompat$isImmuneKnife(toolStack)) {
 			if (player != null) {
-				toolStack.hurtAndBreak(1, (LivingEntity) player, p -> p.broadcastBreakEvent(EquipmentSlot.MAINHAND));
-			} else if (toolStack.hurt(1, level.random, null)) {
-				toolStack.setCount(0);
+				toolStack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+			} else if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+				toolStack.hurtAndBreak(1, serverLevel, null, item -> {
+				});
 			}
 		}
 		playSound(ModSounds.BLOCK_CUTTING_BOARD_KNIFE.get(), 0.8f, 1.0f);
@@ -242,24 +244,27 @@ public abstract class CuttingBoardEntity implements MultiCuttingExtras {
 		return culinarycompat$extras;
 	}
 
-	@Redirect(method = "lambda$processStoredItemUsingTool$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;m_41622_(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
-	private void culinarycompat$skipKnifeDamage(ItemStack stack, int amount, LivingEntity entity,
-			java.util.function.Consumer<LivingEntity> onBroken) {
+	@Redirect(method = "lambda$processStoredItemUsingTool$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
+	private void culinarycompat$skipKnifeDamage(ItemStack stack, int amount,
+			net.minecraft.server.level.ServerLevel level, LivingEntity player,
+			java.util.function.Consumer<Item> onBroken) {
 		if (culinarycompat$isImmuneKnife(stack)) {
 			return;
 		}
-		stack.hurtAndBreak(amount, entity, onBroken);
+		stack.hurtAndBreak(amount, level, player, onBroken);
 	}
 
 	@Inject(method = "saveAdditional", at = @At("TAIL"), remap = true)
-	private void culinarycompat$saveExtras(CompoundTag tag, CallbackInfo ci) {
-		tag.put("CulinaryCompatExtras", culinarycompat$extras.serializeNBT());
+	private void culinarycompat$saveExtras(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries,
+			CallbackInfo ci) {
+		tag.put("CulinaryCompatExtras", culinarycompat$extras.serializeNBT(registries));
 	}
 
-	@Inject(method = "load", at = @At("TAIL"), remap = true)
-	private void culinarycompat$loadExtras(CompoundTag tag, CallbackInfo ci) {
+	@Inject(method = "loadAdditional", at = @At("TAIL"), remap = true)
+	private void culinarycompat$loadExtras(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries,
+			CallbackInfo ci) {
 		if (tag.contains("CulinaryCompatExtras")) {
-			culinarycompat$extras.deserializeNBT(tag.getCompound("CulinaryCompatExtras"));
+			culinarycompat$extras.deserializeNBT(registries, tag.getCompound("CulinaryCompatExtras"));
 		}
 	}
 }

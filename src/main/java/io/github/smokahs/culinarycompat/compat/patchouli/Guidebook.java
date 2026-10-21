@@ -2,8 +2,6 @@ package io.github.smokahs.culinarycompat.compat.patchouli;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +20,8 @@ import io.github.smokahs.culinarycompat.CulinaryCompat;
 public class Guidebook extends Item {
 
 	private static final String PATCHOULI_MODID = "patchouli";
-	private static final ResourceLocation BOOK_ID = new ResourceLocation(CulinaryCompat.MODID, "guide");
+	private static final ResourceLocation BOOK_ID = ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID,
+			"guide");
 
 	public Guidebook(Properties props) {
 		super(props.stacksTo(1));
@@ -51,7 +50,7 @@ public class Guidebook extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext level, List<Component> tooltip, TooltipFlag flag) {
 		super.appendHoverText(stack, level, tooltip, flag);
 		tooltip.add(Component.translatable("tooltip.culinarycompat.guidebook.subtitle").withStyle(ChatFormatting.GRAY));
 	}

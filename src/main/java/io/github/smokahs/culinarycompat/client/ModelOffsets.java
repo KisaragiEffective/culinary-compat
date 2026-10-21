@@ -16,37 +16,37 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import vectorwing.farmersdelight.common.block.CookingPotBlock;
 import vectorwing.farmersdelight.common.block.CuttingBoardBlock;
 import vectorwing.farmersdelight.common.block.SkilletBlock;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ModelOffsets {
 	static final ModelProperty<Boolean> OFFSET_APPLIES = new ModelProperty<>();
 
 	private static final String CFB_NAMESPACE = "cookingforblockheads";
-	private static final ResourceLocation CFB_COOKING_TABLE = new ResourceLocation(CFB_NAMESPACE, "cooking_table");
+	private static final ResourceLocation CFB_COOKING_TABLE = ResourceLocation.fromNamespaceAndPath(CFB_NAMESPACE,
+			"cooking_table");
 	private static final int VERTEX_STRIDE_INTS = 8;
 
 	// fd blocks + custom bakeware offsets
 	private static final Rule CFB_BELOW_DOWN = new Rule(-1.0f / 16.0f, (level, pos) -> {
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation id = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation id = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		return id != null && CFB_NAMESPACE.equals(id.getNamespace()) && !CFB_COOKING_TABLE.equals(id);
 	});
 
@@ -57,20 +57,20 @@ public final class ModelOffsets {
 		if (belowState.isFaceSturdy(level, below, Direction.UP)) {
 			return true;
 		}
-		ResourceLocation id = ForgeRegistries.BLOCKS.getKey(belowState.getBlock());
+		ResourceLocation id = BuiltInRegistries.BLOCK.getKey(belowState.getBlock());
 		return id != null && CFB_NAMESPACE.equals(id.getNamespace()) && "cooking_table".equals(id.getPath());
 	});
 
 	private static final Map<ResourceLocation, Rule> EXPLICIT_RULES = Map.of(
-			new ResourceLocation(CulinaryCompat.MODID, "bakeware"), CFB_BELOW_DOWN,
-			new ResourceLocation(CulinaryCompat.MODID, "ae2_kitchen_station"), STURDY_UP);
+			ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, "bakeware"), CFB_BELOW_DOWN,
+			ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, "ae2_kitchen_station"), STURDY_UP);
 
 	private static Rule resolveRule(ResourceLocation blockId) {
 		Rule explicit = EXPLICIT_RULES.get(blockId);
 		if (explicit != null) {
 			return explicit;
 		}
-		Block block = ForgeRegistries.BLOCKS.getValue(blockId);
+		Block block = BuiltInRegistries.BLOCK.get(blockId);
 		if (block instanceof CookingPotBlock || block instanceof SkilletBlock || block instanceof CuttingBoardBlock) {
 			return CFB_BELOW_DOWN;
 		}
@@ -82,13 +82,13 @@ public final class ModelOffsets {
 
 	@SubscribeEvent
 	public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
-		Map<ResourceLocation, BakedModel> models = event.getModels();
-		for (Map.Entry<ResourceLocation, BakedModel> e : models.entrySet()) {
-			ResourceLocation key = e.getKey();
-			if (key instanceof ModelResourceLocation mrl && "inventory".equals(mrl.getVariant())) {
+		Map<ModelResourceLocation, BakedModel> models = event.getModels();
+		for (Map.Entry<ModelResourceLocation, BakedModel> e : models.entrySet()) {
+			ModelResourceLocation key = e.getKey();
+			if ("inventory".equals(key.getVariant())) {
 				continue;
 			}
-			Rule rule = resolveRule(new ResourceLocation(key.getNamespace(), key.getPath()));
+			Rule rule = resolveRule(key.id());
 			if (rule == null || e.getValue() instanceof OffsetBakedModel) {
 				continue;
 			}

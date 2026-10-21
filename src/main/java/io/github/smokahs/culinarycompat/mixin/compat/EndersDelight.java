@@ -2,7 +2,7 @@ package io.github.smokahs.culinarycompat.mixin.compat;
 
 import net.neoforged.neoforge.items.IItemHandler;
 
-import com.axedgaming.endersdelight.block.entity.EndstoneStoveBlockEntity;
+import com.axedgaming.endersdelight.Common.Blocks.entity.EndstoneStoveBlockEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import cn.foggyhillside.ends_delight.blockentitiy.EndStoveBlockEntity;
+import cn.foggyhillside.ends_delight.block.entity.EndStoveBlockEntity;
 
 // fixes for ends_delight (FoggyHillside/End-s-Delight)
 @Mixin(value = EndStoveBlockEntity.class, remap = false)

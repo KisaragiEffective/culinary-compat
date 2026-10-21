@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +15,6 @@ import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
@@ -77,12 +76,12 @@ public final class Plugin implements EmiPlugin {
 				if (is == null || is.isEmpty()) {
 					return false;
 				}
-				ResourceLocation id = ForgeRegistries.ITEMS.getKey(is.getItem());
+				ResourceLocation id = BuiltInRegistries.ITEM.getKey(is.getItem());
 				if (id == null || !"patchouli".equals(id.getNamespace()) || !"guide_book".equals(id.getPath())) {
 					return false;
 				}
-				CompoundTag tag = is.getTag();
-				return tag != null && "culinarycompat:guide".equals(tag.getString("patchouli:book"));
+				return ItemStack.isSameItemSameComponents(is, vazkii.patchouli.api.PatchouliAPI.get()
+						.getBookStack(ResourceLocation.parse("culinarycompat:guide")));
 			});
 		} catch (Exception e) {
 			CulinaryCompat.LOGGER.error("EMI hide bound patchouli journal failed", e);
@@ -90,7 +89,7 @@ public final class Plugin implements EmiPlugin {
 	}
 
 	private static void hideFdCookingRecipes(EmiRegistry registry) {
-		ResourceLocation fdCooking = new ResourceLocation("farmersdelight", "cooking");
+		ResourceLocation fdCooking = ResourceLocation.fromNamespaceAndPath("farmersdelight", "cooking");
 		try {
 			registry.removeRecipes(r -> {
 				dev.emi.emi.api.recipe.EmiRecipeCategory cat = r.getCategory();
@@ -111,7 +110,7 @@ public final class Plugin implements EmiPlugin {
 			ResourceLocation rl = ResourceLocation.tryParse(id);
 			if (rl == null)
 				continue;
-			Item item = ForgeRegistries.ITEMS.getValue(rl);
+			Item item = BuiltInRegistries.ITEM.get(rl);
 			if (item != null && item != Items.AIR)
 				hidden.add(item);
 		}
@@ -123,7 +122,7 @@ public final class Plugin implements EmiPlugin {
 		}
 		// FD present: the croptopia knife is nuked in favor of the FD knife
 		if (ModList.get().isLoaded("croptopia") && ModList.get().isLoaded("farmersdelight")) {
-			Item knife = ForgeRegistries.ITEMS.getValue(new ResourceLocation("croptopia", "knife"));
+			Item knife = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("croptopia", "knife"));
 			if (knife != null && knife != Items.AIR)
 				hidden.add(knife);
 		}
@@ -203,7 +202,7 @@ public final class Plugin implements EmiPlugin {
 	}
 
 	private static void registerCategory(EmiRegistry registry, Bridges.Kind kind, ItemStack iconStack) {
-		ResourceLocation id = new ResourceLocation(CulinaryCompat.MODID, kind.path);
+		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, kind.path);
 		EmiStack icon = iconStack.isEmpty() ? EmiStack.of(new ItemStack(Items.CRAFTING_TABLE)) : EmiStack.of(iconStack);
 		EmiRecipeCategory cat = new EmiRecipeCategory(id, icon);
 		registry.addCategory(cat);
@@ -225,7 +224,7 @@ public final class Plugin implements EmiPlugin {
 	}
 
 	private static ItemStack itemStack(String ns, String path) {
-		Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(ns, path));
+		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(ns, path));
 		return item == null ? ItemStack.EMPTY : new ItemStack(item);
 	}
 }

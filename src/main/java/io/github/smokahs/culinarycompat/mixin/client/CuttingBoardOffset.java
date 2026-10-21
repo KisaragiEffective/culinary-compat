@@ -2,10 +2,10 @@ package io.github.smokahs.culinarycompat.mixin.client;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -21,11 +21,11 @@ import vectorwing.farmersdelight.common.block.entity.CuttingBoardBlockEntity;
 @Mixin(value = CuttingBoardRenderer.class, remap = false)
 public abstract class CuttingBoardOffset {
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$CFB_COUNTER = new ResourceLocation("cookingforblockheads",
-			"counter");
+	private static final ResourceLocation CULINARYCOMPAT$CFB_COUNTER = ResourceLocation
+			.fromNamespaceAndPath("cookingforblockheads", "counter");
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$CFB_CORNER = new ResourceLocation("cookingforblockheads",
-			"corner");
+	private static final ResourceLocation CULINARYCOMPAT$CFB_CORNER = ResourceLocation
+			.fromNamespaceAndPath("cookingforblockheads", "corner");
 	@Unique
 	private static final float CULINARYCOMPAT$OFFSET = -1.0f / 16.0f;
 
@@ -37,7 +37,7 @@ public abstract class CuttingBoardOffset {
 			return;
 		BlockPos pos = be.getBlockPos();
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation belowId = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation belowId = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		if (!CULINARYCOMPAT$CFB_COUNTER.equals(belowId) && !CULINARYCOMPAT$CFB_CORNER.equals(belowId))
 			return;
 		poseStack.translate(0.0f, CULINARYCOMPAT$OFFSET, 0.0f);

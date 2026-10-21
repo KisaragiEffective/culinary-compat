@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import io.github.smokahs.culinarycompat.bridges.Bridges;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -22,9 +22,9 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 
 public class Category implements IRecipeCategory<Bridges.Entry> {
-	private static final ResourceLocation CUTTING_BG = new ResourceLocation("farmersdelight",
+	private static final ResourceLocation CUTTING_BG = ResourceLocation.fromNamespaceAndPath("farmersdelight",
 			"textures/gui/jei/cutting_board.png");
-	private static final ResourceLocation FD_INTERFACE = new ResourceLocation("farmersdelight",
+	private static final ResourceLocation FD_INTERFACE = ResourceLocation.fromNamespaceAndPath("farmersdelight",
 			"textures/gui/cooking_pot.png");
 
 	private final ResourceLocation uid;
@@ -164,15 +164,15 @@ public class Category implements IRecipeCategory<Bridges.Entry> {
 
 	private static ItemStack resolveToolStack(Bridges.Kind kind) {
 		ResourceLocation id = switch (kind) {
-			case CUTTINGBOARD -> new ResourceLocation("farmersdelight", "netherite_knife");
-			case SKILLET -> new ResourceLocation("farmersdelight", "skillet");
-			case POT -> new ResourceLocation("farmersdelight", "cooking_pot");
-			case BAKEWARE -> new ResourceLocation("culinarycompat", "bakeware");
+			case CUTTINGBOARD -> ResourceLocation.fromNamespaceAndPath("farmersdelight", "netherite_knife");
+			case SKILLET -> ResourceLocation.fromNamespaceAndPath("farmersdelight", "skillet");
+			case POT -> ResourceLocation.fromNamespaceAndPath("farmersdelight", "cooking_pot");
+			case BAKEWARE -> ResourceLocation.fromNamespaceAndPath("culinarycompat", "bakeware");
 			default -> null;
 		};
 		if (id == null)
 			return ItemStack.EMPTY;
-		Item item = ForgeRegistries.ITEMS.getValue(id);
+		Item item = BuiltInRegistries.ITEM.get(id);
 		return item == null ? ItemStack.EMPTY : new ItemStack(item);
 	}
 }

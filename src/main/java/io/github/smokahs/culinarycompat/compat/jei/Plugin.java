@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -18,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
@@ -37,7 +37,7 @@ import vectorwing.farmersdelight.common.crafting.CookingPotRecipe;
 @JeiPlugin
 @OnlyIn(Dist.CLIENT)
 public final class Plugin implements IModPlugin {
-	private static final ResourceLocation UID = new ResourceLocation(CulinaryCompat.MODID, "jei");
+	private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, "jei");
 
 	private static final Map<Bridges.Kind, Category> CATEGORIES = new EnumMap<>(Bridges.Kind.class);
 
@@ -95,7 +95,7 @@ public final class Plugin implements IModPlugin {
 
 	private static void registerCategory(IRecipeCategoryRegistration registration, Bridges.Kind kind,
 			ItemStack iconStack) {
-		ResourceLocation uid = new ResourceLocation(CulinaryCompat.MODID, kind.path);
+		ResourceLocation uid = ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, kind.path);
 		Component title = Component.translatable("emi.category.culinarycompat." + kind.path);
 		Category cat = new Category(uid, kind, title, registration.getJeiHelpers().getGuiHelper(), iconStack);
 		registration.addRecipeCategories(cat);
@@ -218,7 +218,7 @@ public final class Plugin implements IModPlugin {
 			ResourceLocation rl = ResourceLocation.tryParse(id);
 			if (rl == null)
 				continue;
-			Item item = ForgeRegistries.ITEMS.getValue(rl);
+			Item item = BuiltInRegistries.ITEM.get(rl);
 			if (item != null && item != Items.AIR)
 				hide.add(new ItemStack(item));
 		}
@@ -230,7 +230,7 @@ public final class Plugin implements IModPlugin {
 		}
 		// FD present: the croptopia knife is nuked in favor of the FD knife
 		if (ModList.get().isLoaded("croptopia") && ModList.get().isLoaded("farmersdelight")) {
-			Item knife = ForgeRegistries.ITEMS.getValue(new ResourceLocation("croptopia", "knife"));
+			Item knife = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("croptopia", "knife"));
 			if (knife != null && knife != Items.AIR)
 				hide.add(new ItemStack(knife));
 		}
@@ -242,13 +242,12 @@ public final class Plugin implements IModPlugin {
 			}
 		}
 		Level level = Minecraft.getInstance().level;
-		if (level != null) {
-			mezz.jei.api.recipe.RecipeType<CookingPotRecipe> fdCooking = mezz.jei.api.recipe.RecipeType
-					.create("farmersdelight", "cooking", CookingPotRecipe.class);
+		if (level != null && ModList.get().isLoaded("farmersdelight")) {
+			var fdCooking = vectorwing.farmersdelight.integration.jei.FDRecipeTypes.COOKING;
 			try {
-				List<CookingPotRecipe> fdCookingRecipes = new ArrayList<>(level.getRecipeManager().getAllRecipesFor(
+				var fdCookingRecipes = new ArrayList<>(level.getRecipeManager().getAllRecipesFor(
 						(RecipeType<CookingPotRecipe>) net.minecraft.core.registries.BuiltInRegistries.RECIPE_TYPE
-								.get(new ResourceLocation("farmersdelight", "cooking"))));
+								.get(ResourceLocation.fromNamespaceAndPath("farmersdelight", "cooking"))));
 				if (!fdCookingRecipes.isEmpty()) {
 					runtime.getRecipeManager().hideRecipes(fdCooking, fdCookingRecipes);
 				}
@@ -259,9 +258,9 @@ public final class Plugin implements IModPlugin {
 		Set<ResourceLocation> campfireIds = FarmersDelight.Campfire.getHiddenCampfireRecipeIds();
 		if (!campfireIds.isEmpty() && level != null) {
 			try {
-				List<CampfireCookingRecipe> toHide = new ArrayList<>();
-				for (CampfireCookingRecipe r : level.getRecipeManager().getAllRecipesFor(RecipeType.CAMPFIRE_COOKING)) {
-					if (campfireIds.contains(r.getId()))
+				List<net.minecraft.world.item.crafting.RecipeHolder<CampfireCookingRecipe>> toHide = new ArrayList<>();
+				for (var r : level.getRecipeManager().getAllRecipesFor(RecipeType.CAMPFIRE_COOKING)) {
+					if (campfireIds.contains(r.id()))
 						toHide.add(r);
 				}
 				if (!toHide.isEmpty()) {
@@ -280,7 +279,7 @@ public final class Plugin implements IModPlugin {
 	}
 
 	private static ItemStack itemStack(String ns, String path) {
-		Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(ns, path));
+		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(ns, path));
 		return item == null ? ItemStack.EMPTY : new ItemStack(item);
 	}
 }

@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,11 +35,11 @@ import vectorwing.farmersdelight.common.registry.ModRecipeTypes;
 @Mixin(value = CuttingBoardBlock.class, remap = false)
 public abstract class CuttingBoardUse {
 	private static final TagKey<Item> CULINARYCOMPAT$KNIVES_TAG = TagKey.create(Registries.ITEM,
-			new ResourceLocation("forge", "tools/knives"));
+			ResourceLocation.fromNamespaceAndPath("c", "tools/knives"));
 
-	@Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = true)
-	private void culinarycompat$multiUse(BlockState state, Level level, BlockPos pos, Player player,
-			InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+	@Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
+	private void culinarycompat$multiUse(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+			InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<ItemInteractionResult> cir) {
 		BlockEntity be = level.getBlockEntity(pos);
 		if (!(be instanceof CuttingBoardBlockEntity board)) {
 			return;
@@ -59,7 +59,7 @@ public abstract class CuttingBoardUse {
 			}
 			level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.ITEM_PICKUP,
 					SoundSource.BLOCKS, 0.5f, 0.8f);
-			cir.setReturnValue(InteractionResult.SUCCESS);
+			cir.setReturnValue(ItemInteractionResult.SUCCESS);
 			return;
 		}
 
@@ -75,7 +75,7 @@ public abstract class CuttingBoardUse {
 				extras.insertItem(i, one, false);
 				level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.WOOD_PLACE,
 						SoundSource.BLOCKS, 1.0f, 0.8f);
-				cir.setReturnValue(InteractionResult.SUCCESS);
+				cir.setReturnValue(ItemInteractionResult.SUCCESS);
 				return;
 			}
 		}
@@ -85,7 +85,8 @@ public abstract class CuttingBoardUse {
 	private static boolean culinarycompat$matchesCuttingTool(Level level, CuttingBoardBlockEntity board,
 			ItemStack held) {
 		IItemHandler extras = ((MultiCuttingExtras) board).culinarycompat$getExtras();
-		for (CuttingBoardRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.CUTTING.get())) {
+		for (CuttingBoardRecipe recipe : io.github.smokahs.culinarycompat.recipe.RecipeIds
+				.allFor(level.getRecipeManager(), ModRecipeTypes.CUTTING.get())) {
 			if (recipe.getIngredients().isEmpty() || !recipe.getTool().test(held)) {
 				continue;
 			}

@@ -2,10 +2,10 @@ package io.github.smokahs.culinarycompat.mixin.client;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -23,8 +23,8 @@ public abstract class SkilletOffset {
 	@Unique
 	private static final String CULINARYCOMPAT$CFB_NAMESPACE = "cookingforblockheads";
 	@Unique
-	private static final ResourceLocation CULINARYCOMPAT$COOKING_TABLE = new ResourceLocation(
-			CULINARYCOMPAT$CFB_NAMESPACE, "cooking_table");
+	private static final ResourceLocation CULINARYCOMPAT$COOKING_TABLE = ResourceLocation
+			.fromNamespaceAndPath(CULINARYCOMPAT$CFB_NAMESPACE, "cooking_table");
 	@Unique
 	private static final float CULINARYCOMPAT$OFFSET = -1.0f / 16.0f;
 
@@ -36,7 +36,7 @@ public abstract class SkilletOffset {
 			return;
 		BlockPos pos = be.getBlockPos();
 		BlockState below = level.getBlockState(pos.below());
-		ResourceLocation belowId = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+		ResourceLocation belowId = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 		if (belowId == null || !CULINARYCOMPAT$CFB_NAMESPACE.equals(belowId.getNamespace()))
 			return;
 		if (CULINARYCOMPAT$COOKING_TABLE.equals(belowId))
