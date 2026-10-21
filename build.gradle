@@ -1,20 +1,16 @@
-buildscript {
-    configurations.classpath {
-        // Librarian also requests upstream ForgeGradle, which shares classes
-        // with the NeoForge 1.20.1 plugin and must not be loaded alongside it.
-        exclude group: 'net.minecraftforge.gradle', module: 'ForgeGradle'
-    }
-}
-
 plugins {
+    id 'java-library'
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle' version '6.0.21'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.neoforged.moddev' version '2.0.148'
     id 'com.diffplug.spotless' version '6.25.0'
 }
+
+version = mod_version
+group = mod_group_id
+base { archivesName = mod_id }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 spotless {
     java {
@@ -27,102 +23,71 @@ spotless {
     }
 }
 
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
-
-version = mod_version
-group = mod_group_id
-
-base {
-    archivesName = mod_id
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-
-minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-
-    copyIdeResources = true
-
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
+neoForge {
+    version = neoforge_version
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
+        client { client() }
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
+            server()
+            programArgument '--nogui'
         }
-
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            type = 'gameTestServer'
         }
-
         data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            data()
+            gameDirectory = project.file('run-data')
+            programArguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources').absolutePath,
+                    '--existing', file('src/main/resources').absolutePath
+        }
+        configureEach {
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 repositories {
     maven {
-        name = 'NeoForged'
-        url = 'https://maven.neoforged.net/releases'
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
     }
     maven {
         name = 'CurseMaven'
         url = 'https://www.cursemaven.com'
-        content {
-            includeGroup 'curse.maven'
-        }
+        content { includeGroup 'curse.maven' }
     }
 }
 
 dependencies {
-    // NeoForge 1.20.1 uses the legacy Forge API namespace.
-    minecraft "net.neoforged:forge:${minecraft_version}-${neoforge_version}"
+    // All artifacts below target Minecraft 1.21.1 and NeoForge. They remain optional.
+    compileOnly 'maven.modrinth:farmers-delight:XTVZDOol'
+    compileOnly 'maven.modrinth:cooking-for-blockheads:MQCIy6VF'
+    compileOnly 'maven.modrinth:balm:CquiaiDj'
+    compileOnly 'maven.modrinth:storage-delight:7I2UUB9l'
+    compileOnly 'maven.modrinth:ae2:KDnFUmMm'
+    compileOnly 'maven.modrinth:jei:iv3KiVkE'
+    compileOnly 'maven.modrinth:emi:5sIPA1To'
+    compileOnly 'maven.modrinth:patchouli:BIogJv2D'
+    compileOnly 'maven.modrinth:refined-storage:lHHiI26k'
+    compileOnly 'maven.modrinth:ends-delight:YTApg6Hl'
+    compileOnly 'maven.modrinth:enders-delight:5S67w5gs'
+    compileOnly 'curse.maven:pamhc2foodcore-372534:6919485'
+    compileOnly 'curse.maven:pamhc2crops-361385:8064883'
+    compileOnly 'curse.maven:pamhc2trees-365460:7847533'
+    compileOnly 'curse.maven:pamhc2foodextended-402231:6221521'
+    compileOnly 'curse.maven:croptopia-415438:7958876'
+    compileOnly 'curse.maven:twilights-flavors-delight-871735:9103719'
+    compileOnly 'curse.maven:my-nethers-delight-1003673:8854319'
 
-    compileOnly fg.deobf("curse.maven:farmers-delight-398521:7801523")
-    compileOnly fg.deobf("curse.maven:pamhc2foodcore-372534:5097798")
-    compileOnly fg.deobf("curse.maven:pamhc2crops-361385:4687624")
-    compileOnly fg.deobf("curse.maven:pamhc2trees-365460:4625518")
-    compileOnly fg.deobf("curse.maven:pamhc2foodextended-402231:5147171")
-    compileOnly fg.deobf("curse.maven:jei-238222:7920915")
-    compileOnly fg.deobf("curse.maven:emi-580555:6420945")
-    compileOnly fg.deobf("curse.maven:cooking-for-blockheads-231484:7454483")
-    compileOnly fg.deobf("curse.maven:storage-delight-forge-979761:7946523")
-    compileOnly fg.deobf("curse.maven:balm-531761:7420617")
-    compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:7148487")
-    compileOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
-    compileOnly fg.deobf("curse.maven:patchouli-306770:7731017")
-    compileOnly fg.deobf("curse.maven:ends-delight-662675:6180421")
-    compileOnly fg.deobf("curse.maven:enders-delight-827163:6474007")
-    compileOnly fg.deobf("curse.maven:nethers-delight-496394:4736227")
-    compileOnly fg.deobf("curse.maven:twilights-flavors-delight-871735:8046920")
-
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -134,39 +99,14 @@ tasks.named('processResources', ProcessResources).configure {
             mod_authors: mod_authors, mod_description: mod_description,
     ]
     inputs.properties replaceProperties
-
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
-}
-
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title'     : mod_id,
-                'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1',
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
-
-    finalizedBy 'reobfJar'
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) { expand replaceProperties }
 }
 
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
-            artifact jar
-        }
+        register('mavenJava', MavenPublication) { from components.java }
     }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
+    repositories { maven { url = layout.projectDirectory.dir('mcmodsrepo') } }
 }
 
 tasks.withType(JavaCompile).configureEach {

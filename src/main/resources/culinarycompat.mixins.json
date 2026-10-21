@@ -3,8 +3,7 @@
   "minVersion": "0.8.5",
   "package": "io.github.smokahs.culinarycompat.mixin",
   "plugin": "io.github.smokahs.culinarycompat.mixin.CulinaryMixinPlugin",
-  "compatibilityLevel": "JAVA_17",
-  "refmap": "culinarycompat.refmap.json",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "cfb.CuttingBoard",
     "cfb.FdCookware",
