@@ -33,8 +33,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.network.NetworkHooks;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 public class StationBlock extends BlockKitchen {
 

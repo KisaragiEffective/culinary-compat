@@ -1,6 +1,6 @@
 package io.github.smokahs.culinarycompat.mixin.compat;
 
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import com.axedgaming.endersdelight.block.entity.EndstoneStoveBlockEntity;
 

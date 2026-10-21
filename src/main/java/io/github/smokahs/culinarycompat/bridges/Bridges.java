@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 public final class Bridges {
 	private Bridges() {

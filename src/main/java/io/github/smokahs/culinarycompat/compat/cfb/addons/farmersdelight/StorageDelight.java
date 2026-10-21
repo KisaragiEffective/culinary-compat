@@ -7,14 +7,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
@@ -30,7 +30,7 @@ public final class StorageDelight {
 		}
 		CulinaryCompat.LOGGER.info("Storage Delight detected, CFB integration active.");
 		if (FMLEnvironment.dist == Dist.CLIENT) {
-			MinecraftForge.EVENT_BUS.register(KitchenTooltip.class);
+			NeoForge.EVENT_BUS.register(KitchenTooltip.class);
 		}
 	}
 

@@ -6,9 +6,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.forgespi.locating.IModFile;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.forgespi.locating.IModFile;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
@@ -26,7 +26,7 @@ public final class OverridePack {
 		IModFile modFile = ModList.get().getModFileById(CulinaryCompat.MODID).getFile();
 		Path root = modFile.findResource(ROOT);
 		Pack pack = Pack.readMetaAndCreate(PACK_ID, Component.literal("Culinary Compat Overrides"), true,
-				id -> new net.minecraftforge.resource.PathPackResources(id, true, root), PackType.SERVER_DATA,
+				id -> new net.neoforged.neoforge.resource.PathPackResources(id, true, root), PackType.SERVER_DATA,
 				Pack.Position.TOP, PackSource.BUILT_IN);
 		if (pack != null) {
 			event.addRepositorySource(consumer -> consumer.accept(pack));

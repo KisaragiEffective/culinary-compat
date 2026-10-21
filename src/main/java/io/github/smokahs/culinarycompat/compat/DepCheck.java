@@ -5,16 +5,16 @@ import java.util.List;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.config.Configs;
 
-@Mod.EventBusSubscriber(modid = CulinaryCompat.MODID)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID)
 public final class DepCheck {
 	private static final String[] DEPS = {"farmersdelight", "pamhc2foodcore", "pamhc2crops", "pamhc2trees",
 			"pamhc2foodextended"};

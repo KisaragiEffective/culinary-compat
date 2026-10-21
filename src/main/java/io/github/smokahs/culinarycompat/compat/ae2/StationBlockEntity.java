@@ -129,7 +129,7 @@ public class StationBlockEntity extends BalmBlockEntity implements IStorageProvi
 	@Override
 	public void returnToMainMenu(Player player, ISubMenu subMenu) {
 		if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
-			net.minecraftforge.network.NetworkHooks.openScreen(sp, this, buf -> buf.writeBlockPos(getBlockPos()));
+			net.neoforged.neoforge.network.NetworkHooks.openScreen(sp, this, buf -> buf.writeBlockPos(getBlockPos()));
 		}
 	}
 

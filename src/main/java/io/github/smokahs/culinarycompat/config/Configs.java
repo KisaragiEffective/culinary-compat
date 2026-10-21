@@ -1,13 +1,13 @@
 package io.github.smokahs.culinarycompat.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.config.ModConfigEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
-@Mod.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class Configs {
 	private Configs() {
 	}
@@ -21,23 +21,23 @@ public final class Configs {
 	}
 
 	public static final class Common {
-		private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+		private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-		private static final ForgeConfigSpec.BooleanValue NERF_PAMS;
-		private static final ForgeConfigSpec.BooleanValue NERF_CROPTOPIA;
-		private static final ForgeConfigSpec.BooleanValue INEDIBLE_INGREDIENTS;
-		private static final ForgeConfigSpec.BooleanValue NERF_MINECRAFT;
+		private static final ModConfigSpec.BooleanValue NERF_PAMS;
+		private static final ModConfigSpec.BooleanValue NERF_CROPTOPIA;
+		private static final ModConfigSpec.BooleanValue INEDIBLE_INGREDIENTS;
+		private static final ModConfigSpec.BooleanValue NERF_MINECRAFT;
 
-		private static final ForgeConfigSpec.BooleanValue BAKEWARE_ENABLED;
-		private static final ForgeConfigSpec.IntValue BAKEWARE_DURATION_TICKS;
-		private static final ForgeConfigSpec.BooleanValue BAKEWARE_REFUND_ON_CANCEL;
+		private static final ModConfigSpec.BooleanValue BAKEWARE_ENABLED;
+		private static final ModConfigSpec.IntValue BAKEWARE_DURATION_TICKS;
+		private static final ModConfigSpec.BooleanValue BAKEWARE_REFUND_ON_CANCEL;
 
-		private static final ForgeConfigSpec.BooleanValue OP_NETHERITE_KNIFE;
-		private static final ForgeConfigSpec.BooleanValue MULTI_CUTTING;
+		private static final ModConfigSpec.BooleanValue OP_NETHERITE_KNIFE;
+		private static final ModConfigSpec.BooleanValue MULTI_CUTTING;
 
-		private static final ForgeConfigSpec.BooleanValue RESTORE_PAMS_TOOLS;
+		private static final ModConfigSpec.BooleanValue RESTORE_PAMS_TOOLS;
 
-		private static final ForgeConfigSpec.BooleanValue NOTIFY_MISSING_DEPS;
+		private static final ModConfigSpec.BooleanValue NOTIFY_MISSING_DEPS;
 
 		static {
 			BUILDER.comment("Food rebalancing (Pam's HarvestCraft 2, Croptopia). Requires restart to take effect.")
@@ -93,7 +93,7 @@ public final class Configs {
 			BUILDER.pop();
 		}
 
-		public static final ForgeConfigSpec SPEC = BUILDER.build();
+		public static final ModConfigSpec SPEC = BUILDER.build();
 
 		public static boolean nerfPams;
 		public static boolean nerfCroptopia;
@@ -130,10 +130,10 @@ public final class Configs {
 	}
 
 	public static final class Client {
-		private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+		private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-		private static final ForgeConfigSpec.BooleanValue BAKE_DING_SOUND;
-		private static final ForgeConfigSpec.DoubleValue DING_VOLUME;
+		private static final ModConfigSpec.BooleanValue BAKE_DING_SOUND;
+		private static final ModConfigSpec.DoubleValue DING_VOLUME;
 
 		static {
 			BUILDER.comment("Sound effects played during the bake flow.").push("sounds");
@@ -144,7 +144,7 @@ public final class Configs {
 			BUILDER.pop();
 		}
 
-		public static final ForgeConfigSpec SPEC = BUILDER.build();
+		public static final ModConfigSpec SPEC = BUILDER.build();
 
 		public static boolean bakeDingSound;
 		public static float dingVolume;

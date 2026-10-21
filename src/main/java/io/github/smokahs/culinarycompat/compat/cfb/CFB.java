@@ -19,17 +19,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,15 +61,15 @@ public final class CFB {
 		active = true;
 		CulinaryCompat.LOGGER.info("CFB + FD detected, enabling cutting board kitchen integration.");
 
-		MinecraftForge.EVENT_BUS.register(KitchenConnector.class);
-		MinecraftForge.EVENT_BUS.register(FarmersDelight.Cutting.class);
-		MinecraftForge.EVENT_BUS.register(UI.CraftSound.class);
-		MinecraftForge.EVENT_BUS.register(BakeState.Manager.class);
-		MinecraftForge.EVENT_BUS.register(CuttingBoardInteract.class);
+		NeoForge.EVENT_BUS.register(KitchenConnector.class);
+		NeoForge.EVENT_BUS.register(FarmersDelight.Cutting.class);
+		NeoForge.EVENT_BUS.register(UI.CraftSound.class);
+		NeoForge.EVENT_BUS.register(BakeState.Manager.class);
+		NeoForge.EVENT_BUS.register(CuttingBoardInteract.class);
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			// client-only tooltips (thanks MaveTheMaverick and RainbowMagicMarker)
-			MinecraftForge.EVENT_BUS.register(UI.Tooltip.class);
-			MinecraftForge.EVENT_BUS.register(UI.MissingToolsTooltip.class);
+			NeoForge.EVENT_BUS.register(UI.Tooltip.class);
+			NeoForge.EVENT_BUS.register(UI.MissingToolsTooltip.class);
 			// wait for balm client runtime to be up before registering tooltip handler
 			net.blay09.mods.balm.api.client.BalmClient.onRuntimeAvailable(BakeState.Tooltip::register);
 		}
@@ -79,12 +79,12 @@ public final class CFB {
 		if (ModList.get().isLoaded(Pam.PAM_MODID)) {
 			CulinaryCompat.LOGGER.info("Pam food core detected, enabling Pam cuttingboarditem → FD knife replacement.");
 			modEventBus.register(Pam.CreativeTabFilter.class);
-			MinecraftForge.EVENT_BUS.register(Pam.RecipeStripper.class);
+			NeoForge.EVENT_BUS.register(Pam.RecipeStripper.class);
 		}
 
 		if (ModList.get().isLoaded(Croptopia.CROPTOPIA_MODID)) {
 			CulinaryCompat.LOGGER.info("Croptopia detected, enabling Croptopia kitchen bridge.");
-			MinecraftForge.EVENT_BUS.register(Croptopia.Stripper.class);
+			NeoForge.EVENT_BUS.register(Croptopia.Stripper.class);
 		}
 	}
 

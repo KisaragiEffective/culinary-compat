@@ -19,8 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -73,7 +73,7 @@ public abstract class CuttingBoardEntity implements MultiCuttingExtras {
 		if (!Configs.Common.opNetheriteKnife) {
 			return false;
 		}
-		ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+		ResourceLocation id = net.neoforged.neoforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
 		return CULINARYCOMPAT$NETHERITE_KNIFE_ID.equals(id);
 	}
 

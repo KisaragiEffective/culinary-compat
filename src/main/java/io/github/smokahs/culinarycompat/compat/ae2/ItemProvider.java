@@ -10,7 +10,7 @@ import net.blay09.mods.cookingforblockheads.api.SourceItem;
 import net.blay09.mods.cookingforblockheads.api.capability.IKitchenItemProvider;
 import net.blay09.mods.cookingforblockheads.api.capability.IngredientPredicate;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
