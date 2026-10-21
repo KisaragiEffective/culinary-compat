@@ -47,6 +47,10 @@ tasks.named('compileGameTestJava', JavaCompile).configure {
 
 // Generate a deterministic empty structure without shipping test assets in main.
 tasks.named('processGameTestResources').configure {
+    dependsOn 'compileJava'
+    from(layout.buildDirectory.dir('tmp/compileJava')) {
+        include "${mod_id}.refmap.json"
+    }
     doLast {
         def target = new File(destinationDir, 'data/culinarycompat/structures/empty.nbt')
         target.parentFile.mkdirs()
@@ -65,7 +69,8 @@ tasks.named('processGameTestResources').configure {
     }
 }
 configurations {
-    gameTestImplementation.extendsFrom implementation, compileOnly
+    gameTestImplementation.extendsFrom implementation
+    gameTestCompileOnly.extendsFrom compileOnly
     gameTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
@@ -106,6 +111,7 @@ minecraft {
             workingDirectory project.file('run-gametest')
             mods {
                 "${mod_id}" {
+                    source sourceSets.main
                     source sourceSets.gameTest
                 }
             }
@@ -121,6 +127,10 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
     maven {
         name = 'CurseMaven'
         url = 'https://www.cursemaven.com'
@@ -155,10 +165,11 @@ dependencies {
 
     // These integrations are required by the block tests; missing mods must fail
     // the run rather than turn coverage into silently skipped tests.
-    gameTestRuntimeOnly fg.deobf("curse.maven:farmers-delight-398521:7801523")
+    gameTestRuntimeOnly fg.deobf("maven.modrinth:farmers-delight:SiIpcZzM")
     gameTestRuntimeOnly fg.deobf("curse.maven:cooking-for-blockheads-231484:7454483")
     gameTestRuntimeOnly fg.deobf("curse.maven:balm-531761:7420617")
     gameTestRuntimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:7148487")
+    gameTestRuntimeOnly fg.deobf("maven.modrinth:guideme:i7Tp1AHw")
 }
 
 tasks.named('processResources', ProcessResources).configure {
