@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -17,19 +17,19 @@
 			"tag": "croptopia:beef_replacements"
 		},
 		{
-			"tag": "forge:chile_peppers"
+			"tag": "c:chile_peppers"
 		},
 		{
-			"tag": "forge:blackbeans"
+			"tag": "c:blackbeans"
 		},
 		{
-			"tag": "forge:corn"
+			"tag": "c:corn"
 		},
 		{
-			"tag": "forge:cheeses"
+			"tag": "c:cheeses"
 		},
 		{
-			"tag": "forge:rice"
+			"tag": "c:rice"
 		}
 	],
 	"result": {

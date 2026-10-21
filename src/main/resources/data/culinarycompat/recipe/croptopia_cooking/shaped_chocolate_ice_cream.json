@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -17,10 +17,10 @@
 			"item": "minecraft:egg"
 		},
 		{
-			"tag": "forge:chocolates"
+			"tag": "c:chocolates"
 		},
 		{
-			"tag": "forge:milk_bottles"
+			"tag": "c:milk_bottles"
 		},
 		{
 			"item": "minecraft:sugar"

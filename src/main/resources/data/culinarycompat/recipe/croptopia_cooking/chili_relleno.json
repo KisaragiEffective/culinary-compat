@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -17,16 +17,16 @@
 			"item": "minecraft:egg"
 		},
 		{
-			"tag": "forge:chile_peppers"
+			"tag": "c:chile_peppers"
 		},
 		{
-			"tag": "forge:olive_oils"
+			"tag": "c:olive_oils"
 		},
 		{
-			"tag": "forge:flour"
+			"tag": "c:flour"
 		},
 		{
-			"tag": "forge:salts"
+			"tag": "c:salts"
 		}
 	],
 	"result": {

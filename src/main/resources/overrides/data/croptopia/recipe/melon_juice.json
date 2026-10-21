@@ -1,14 +1,14 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
     {
-      "tag": "forge:melons"
+      "tag": "c:melons"
     },
     {
       "item": "croptopia:food_press"

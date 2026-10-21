@@ -1,6 +1,6 @@
 {
   "conditions": [
-    {"type": "forge:mod_loaded", "modid": "patchouli"}
+    {"type": "c:mod_loaded", "modid": "patchouli"}
   ],
   "type": "minecraft:crafting_shapeless",
   "ingredients": [

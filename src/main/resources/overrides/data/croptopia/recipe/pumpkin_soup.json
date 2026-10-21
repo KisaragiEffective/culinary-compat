@@ -1,17 +1,17 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
     "1": {
-      "tag": "forge:onions"
+      "tag": "c:onions"
     },
     "2": {
-      "tag": "forge:garlic"
+      "tag": "c:garlic"
     },
     "3": {
       "item": "croptopia:pepper"
@@ -20,7 +20,7 @@
       "item": "minecraft:pumpkin"
     },
     "5": {
-      "tag": "forge:salts"
+      "tag": "c:salts"
     },
     "6": {
       "item": "croptopia:cooking_pot"

@@ -1,14 +1,14 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
     {
-      "tag": "forge:apples"
+      "tag": "c:apples"
     },
     {
       "item": "minecraft:sugar"
@@ -17,10 +17,10 @@
       "item": "minecraft:egg"
     },
     {
-      "tag": "forge:flour"
+      "tag": "c:flour"
     },
     {
-      "tag": "forge:doughs"
+      "tag": "c:doughs"
     },
     {
       "item": "croptopia:frying_pan"

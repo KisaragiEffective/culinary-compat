@@ -6,7 +6,7 @@
     "2": { "item": "farmersdelight:bacon" },
     "3": { "item": "croptopia:hashed_brown" },
     "4": { "item": "croptopia:baked_beans" },
-    "5": { "tag": "forge:sausages" },
+    "5": { "tag": "c:sausages" },
     "6": { "item": "croptopia:toast" },
     "7": { "item": "croptopia:frying_pan" }
   },

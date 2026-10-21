@@ -7,10 +7,10 @@
   ],
   "key": {
     "1": { "item": "minecraft:potato" },
-    "2": { "tag": "forge:flour" },
-    "3": { "tag": "forge:greenonions" },
+    "2": { "tag": "c:flour" },
+    "3": { "tag": "c:greenonions" },
     "4": { "item": "farmersdelight:bacon" },
-    "5": { "tag": "forge:water_bottles" }
+    "5": { "tag": "c:water_bottles" }
   },
   "result": {
     "item": "croptopia:potato_soup",

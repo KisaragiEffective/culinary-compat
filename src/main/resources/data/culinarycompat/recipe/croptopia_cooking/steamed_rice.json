@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -14,13 +14,13 @@
 	"experience": 0.8,
 	"ingredients": [
 		{
-			"tag": "forge:rice"
+			"tag": "c:rice"
 		},
 		{
-			"tag": "forge:salts"
+			"tag": "c:salts"
 		},
 		{
-			"tag": "forge:water_bottles"
+			"tag": "c:water_bottles"
 		}
 	],
 	"result": {

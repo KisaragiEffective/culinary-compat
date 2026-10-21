@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -14,7 +14,7 @@
 	"experience": 0.8,
 	"ingredients": [
 		{
-			"tag": "forge:vanilla"
+			"tag": "c:vanilla"
 		},
 		{
 			"item": "minecraft:sugar"
@@ -23,7 +23,7 @@
 			"item": "minecraft:egg"
 		},
 		{
-			"tag": "forge:milks"
+			"tag": "c:milks"
 		}
 	],
 	"result": {

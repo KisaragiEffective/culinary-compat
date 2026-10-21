@@ -1,7 +1,7 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shaped",
@@ -18,7 +18,7 @@
       "tag": "croptopia:beef_mutton"
     },
     "2": {
-      "tag": "forge:salts"
+      "tag": "c:salts"
     },
     "3": {
       "item": "croptopia:pepper"
@@ -27,16 +27,16 @@
       "item": "minecraft:potato"
     },
     "5": {
-      "tag": "forge:tomatoes"
+      "tag": "c:tomatoes"
     },
     "6": {
-      "tag": "forge:corn"
+      "tag": "c:corn"
     },
     "7": {
-      "tag": "forge:garlic"
+      "tag": "c:garlic"
     },
     "8": {
-      "tag": "forge:onions"
+      "tag": "c:onions"
     }
   },
   "result": {

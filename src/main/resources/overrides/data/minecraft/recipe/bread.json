@@ -1,6 +1,6 @@
 {
   "conditions": [
-    { "type": "forge:false" }
+    { "type": "c:false" }
   ],
   "type": "minecraft:crafting_shaped",
   "pattern": [ "###" ],

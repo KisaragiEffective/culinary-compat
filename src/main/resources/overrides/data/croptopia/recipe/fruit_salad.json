@@ -1,7 +1,7 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shapeless",
@@ -10,13 +10,13 @@
       "item": "minecraft:bowl"
     },
     {
-      "tag": "forge:strawberries"
+      "tag": "c:strawberries"
     },
     {
-      "tag": "forge:bananas"
+      "tag": "c:bananas"
     },
     {
-      "tag": "forge:grapes"
+      "tag": "c:grapes"
     },
     {
       "item": "minecraft:apple"

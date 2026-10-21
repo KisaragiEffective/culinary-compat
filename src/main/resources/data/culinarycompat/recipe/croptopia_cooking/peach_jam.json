@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -14,7 +14,7 @@
 	"experience": 0.8,
 	"ingredients": [
 		{
-			"tag": "forge:peaches"
+			"tag": "c:peaches"
 		},
 		{
 			"item": "minecraft:sugar"

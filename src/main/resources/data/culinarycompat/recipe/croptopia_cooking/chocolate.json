@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -17,7 +17,7 @@
 			"item": "minecraft:cocoa_beans"
 		},
 		{
-			"tag": "forge:butters"
+			"tag": "c:butters"
 		}
 	],
 	"result": {

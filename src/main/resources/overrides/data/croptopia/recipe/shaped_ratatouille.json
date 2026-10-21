@@ -1,7 +1,7 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shaped",
@@ -15,28 +15,28 @@
       "item": "croptopia:frying_pan"
     },
     "2": {
-      "tag": "forge:eggplants"
+      "tag": "c:eggplants"
     },
     "3": {
-      "tag": "forge:tomatoes"
+      "tag": "c:tomatoes"
     },
     "4": {
-      "tag": "forge:squashes"
+      "tag": "c:squashes"
     },
     "5": {
-      "tag": "forge:zucchini"
+      "tag": "c:zucchini"
     },
     "6": {
-      "tag": "forge:olive_oils"
+      "tag": "c:olive_oils"
     },
     "7": {
-      "tag": "forge:onions"
+      "tag": "c:onions"
     },
     "8": {
-      "tag": "forge:bellpeppers"
+      "tag": "c:bellpeppers"
     },
     "9": {
-      "tag": "forge:basil"
+      "tag": "c:basil"
     }
   },
   "result": {

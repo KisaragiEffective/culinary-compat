@@ -1,7 +1,7 @@
 {
   "conditions": [
     {
-      "type": "forge:false"
+      "type": "c:false"
     }
   ],
   "type": "minecraft:crafting_shaped",
@@ -11,16 +11,16 @@
       "tag": "croptopia:beef_replacements"
     },
     "2": {
-      "tag": "forge:onions"
+      "tag": "c:onions"
     },
     "4": {
-      "tag": "forge:salts"
+      "tag": "c:salts"
     },
     "5": {
-      "tag": "forge:cabbage"
+      "tag": "c:cabbage"
     },
     "6": {
-      "tag": "forge:rice"
+      "tag": "c:rice"
     },
     "8": {
       "item": "croptopia:frying_pan"

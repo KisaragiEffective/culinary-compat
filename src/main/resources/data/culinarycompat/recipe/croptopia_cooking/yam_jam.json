@@ -2,11 +2,11 @@
 	"type": "farmersdelight:cooking",
 	"conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "croptopia"
 		},
 		{
-			"type": "forge:mod_loaded",
+			"type": "c:mod_loaded",
 			"modid": "farmersdelight"
 		}
 	],
@@ -14,16 +14,16 @@
 	"experience": 0.5,
 	"ingredients": [
 		{
-			"tag": "forge:yams"
+			"tag": "c:yams"
 		},
 		{
-			"tag": "forge:vanilla"
+			"tag": "c:vanilla"
 		},
 		{
-			"tag": "forge:milks"
+			"tag": "c:milks"
 		},
 		{
-			"tag": "forge:milks"
+			"tag": "c:milks"
 		}
 	],
 	"result": {
