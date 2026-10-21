@@ -5,11 +5,10 @@ import java.util.List;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.config.Configs;

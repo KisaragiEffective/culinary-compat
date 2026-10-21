@@ -1,7 +1,10 @@
 package io.github.smokahs.culinarycompat.registry;
 
+import java.util.function.Supplier;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -16,16 +19,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
 public final class Blocks {
-	public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
+	public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK,
 			CulinaryCompat.MODID);
 
-	public static final RegistryObject<Block> BAKEWARE = BLOCKS.register("bakeware",
+	public static final Supplier<Block> BAKEWARE = BLOCKS.register("bakeware",
 			() -> new Bakeware(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5f, 6.0f)
 					.sound(SoundType.LANTERN).noOcclusion()));
 
@@ -33,9 +34,14 @@ public final class Blocks {
 	}
 
 	public static class Bakeware extends HorizontalDirectionalBlock {
+		@Override
+		protected com.mojang.serialization.MapCodec<? extends Bakeware> codec() {
+			return simpleCodec(Bakeware::new);
+		}
 		private static final String CFB_NAMESPACE = "cookingforblockheads";
 		// cooking_table is full-height; sits flat without offset
-		private static final ResourceLocation CFB_COOKING_TABLE = new ResourceLocation(CFB_NAMESPACE, "cooking_table");
+		private static final ResourceLocation CFB_COOKING_TABLE = ResourceLocation.fromNamespaceAndPath(CFB_NAMESPACE,
+				"cooking_table");
 		private static final double OFFSET = -1.0 / 16.0;
 		private static final VoxelShape SHAPE_NS = Shapes.or(Block.box(2, 0, 3, 14, 4, 13),
 				Block.box(1, 2, 6, 2, 4, 10), Block.box(14, 2, 6, 15, 4, 10));
@@ -64,7 +70,7 @@ public final class Blocks {
 			Direction facing = state.getValue(FACING);
 			boolean ns = facing.getAxis() == Direction.Axis.Z;
 			BlockState below = level.getBlockState(pos.below());
-			ResourceLocation belowId = ForgeRegistries.BLOCKS.getKey(below.getBlock());
+			ResourceLocation belowId = BuiltInRegistries.BLOCK.getKey(below.getBlock());
 			boolean onCfb = belowId != null && CFB_NAMESPACE.equals(belowId.getNamespace())
 					&& !CFB_COOKING_TABLE.equals(belowId);
 			if (onCfb)

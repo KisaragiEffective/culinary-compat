@@ -2,22 +2,19 @@ package io.github.smokahs.culinarycompat.foodnerf;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.util.ObfuscationReflectionHelper;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.config.Configs;
@@ -26,11 +23,7 @@ public final class FoodNerf {
 	private FoodNerf() {
 	}
 
-	public static void onCommonSetup(final FMLCommonSetupEvent event) {
-		event.enqueueWork(FoodNerf::applyNerfs);
-	}
-
-	private static void applyNerfs() {
+	public static void modifyComponents(ModifyDefaultComponentsEvent event) {
 		JsonArray itemsToChange = new JsonArray();
 
 		if (Configs.Common.nerfPams) {
@@ -58,31 +51,21 @@ public final class FoodNerf {
 			ResourceLocation rl = ResourceLocation.tryParse(id);
 			if (rl == null)
 				continue;
-			Item item = ForgeRegistries.ITEMS.getValue(rl);
+			Item item = BuiltInRegistries.ITEM.get(rl);
 			if (item == null || item == net.minecraft.world.item.Items.AIR)
 				continue;
 
 			if (hunger == 0 && saturation == 0.0f) {
-				writeFoodField(item, null);
+				event.modify(item, builder -> builder.remove(DataComponents.FOOD));
 				continue;
 			}
 
 			FoodProperties oldProps = new ItemStack(item).getFoodProperties(null);
-			FoodProperties.Builder newProps = new FoodProperties.Builder().nutrition(hunger).saturationMod(saturation);
-
-			if (oldProps != null) {
-				for (Pair<MobEffectInstance, Float> e : oldProps.getEffects()) {
-					MobEffectInstance src = e.getFirst();
-					newProps.effect(() -> new MobEffectInstance(src.getEffect(), src.getDuration(), src.getAmplifier(),
-							src.isAmbient(), src.isVisible(), src.showIcon()), e.getSecond());
-				}
-				if (oldProps.canAlwaysEat())
-					newProps.alwaysEat();
-				if (oldProps.isFastFood())
-					newProps.fast();
-			}
-
-			writeFoodField(item, newProps.build());
+			FoodProperties replacement = oldProps == null
+					? new FoodProperties.Builder().nutrition(hunger).saturationModifier(saturation).build()
+					: new FoodProperties(hunger, hunger * saturation * 2.0f, oldProps.canAlwaysEat(),
+							oldProps.eatSeconds(), oldProps.usingConvertsTo(), oldProps.effects());
+			event.modify(item, builder -> builder.set(DataComponents.FOOD, replacement));
 		}
 	}
 
@@ -110,13 +93,4 @@ public final class FoodNerf {
 		}
 	}
 
-	private static void writeFoodField(Item item, FoodProperties props) {
-		try {
-			Field field = ObfuscationReflectionHelper.findField(Item.class, "f_41380_");
-			field.setAccessible(true);
-			field.set(item, props);
-		} catch (Exception e) {
-			CulinaryCompat.LOGGER.error("failed to mutate foodProperties on {}", item, e);
-		}
-	}
 }

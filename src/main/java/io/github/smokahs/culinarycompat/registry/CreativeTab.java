@@ -1,24 +1,19 @@
 package io.github.smokahs.culinarycompat.registry;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.compat.ae2.Bridge;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
 public final class CreativeTab {
-	private static final ResourceLocation CROPTOPIA_KNIFE = new ResourceLocation("croptopia", "knife");
+	private static final ResourceLocation CROPTOPIA_KNIFE = ResourceLocation.fromNamespaceAndPath("croptopia", "knife");
 
 	private CreativeTab() {
 	}
@@ -42,18 +37,11 @@ public final class CreativeTab {
 	}
 
 	private static void removeCroptopiaKnife(BuildCreativeModeTabContentsEvent event) {
-		Item knife = ForgeRegistries.ITEMS.getValue(CROPTOPIA_KNIFE);
+		Item knife = BuiltInRegistries.ITEM.get(CROPTOPIA_KNIFE);
 		if (knife == null) {
 			return;
 		}
-		List<ItemStack> toRemove = new ArrayList<>();
-		for (var entry : event.getEntries()) {
-			if (entry.getKey().getItem() == knife) {
-				toRemove.add(entry.getKey());
-			}
-		}
-		for (ItemStack stack : toRemove) {
-			event.getEntries().remove(stack);
-		}
+		event.getParentEntries().removeIf(stack -> stack.is(knife));
+		event.getSearchEntries().removeIf(stack -> stack.is(knife));
 	}
 }

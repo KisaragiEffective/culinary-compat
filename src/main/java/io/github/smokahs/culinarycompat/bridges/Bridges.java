@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 public final class Bridges {
 	private Bridges() {
@@ -74,6 +74,16 @@ public final class Bridges {
 		return ENTRIES.size();
 	}
 
+	public static Entry find(ResourceLocation id) {
+		return ENTRIES.get(id);
+	}
+
+	public static Set<ResourceLocation> outputsFor(String source) {
+		return ENTRIES.values().stream().filter(entry -> entry.source().equals(source))
+				.map(entry -> BuiltInRegistries.ITEM.getKey(entry.output().getItem()))
+				.collect(java.util.stream.Collectors.toUnmodifiableSet());
+	}
+
 	public static float findExperienceFor(String source, ResourceLocation outputId) {
 		for (Entry e : ENTRIES.values()) {
 			if (!e.source().equals(source))
@@ -81,7 +91,7 @@ public final class Bridges {
 			ItemStack out = e.output();
 			if (out.isEmpty())
 				continue;
-			ResourceLocation id = ForgeRegistries.ITEMS.getKey(out.getItem());
+			ResourceLocation id = BuiltInRegistries.ITEM.getKey(out.getItem());
 			if (outputId.equals(id))
 				return e.experience();
 		}

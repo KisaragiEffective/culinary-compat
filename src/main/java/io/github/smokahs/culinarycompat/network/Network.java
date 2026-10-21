@@ -1,18 +1,13 @@
 package io.github.smokahs.culinarycompat.network;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.DistExecutor;
-import net.neoforged.neoforge.network.NetworkDirection;
-import net.neoforged.neoforge.network.NetworkEvent;
-import net.neoforged.neoforge.network.NetworkRegistry;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.simple.SimpleChannel;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 import io.github.smokahs.culinarycompat.bridges.Bridges;
@@ -20,60 +15,52 @@ import io.github.smokahs.culinarycompat.compat.ae2.Bridge;
 import io.github.smokahs.culinarycompat.compat.ae2.StationSettingsPacket;
 
 public final class Network {
-	private static final String VERSION = "1";
-	public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-			.named(new ResourceLocation(CulinaryCompat.MODID, "main")).networkProtocolVersion(() -> VERSION)
-			.clientAcceptedVersions(VERSION::equals).serverAcceptedVersions(VERSION::equals).simpleChannel();
-
 	private Network() {
 	}
 
-	public static void register() {
-		int id = 0;
-		CHANNEL.registerMessage(id++, BakeStatusPacket.class, BakeStatusPacket::encode, BakeStatusPacket::decode,
-				BakeStatusPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-		CHANNEL.registerMessage(id++, Sync.class, Sync::encode, Sync::decode, Sync::handle,
-				Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+	public static void register(RegisterPayloadHandlersEvent event) {
+		var registrar = event.registrar("2");
+		registrar.playToClient(BakeStatusPacket.TYPE, BakeStatusPacket.STREAM_CODEC, BakeStatusPacket::handle);
+		registrar.playToClient(Sync.TYPE, Sync.STREAM_CODEC, Sync::handle);
 		if (Bridge.isActive()) {
-			CHANNEL.registerMessage(id++, StationSettingsPacket.class, StationSettingsPacket::encode,
-					StationSettingsPacket::decode, StationSettingsPacket::handle,
-					Optional.of(NetworkDirection.PLAY_TO_SERVER));
+			registrar.playToServer(StationSettingsPacket.TYPE, StationSettingsPacket.STREAM_CODEC,
+					StationSettingsPacket::handle);
 		}
 	}
 
 	public static void sendToClient(ServerPlayer player, BakeStatusPacket packet) {
-		CHANNEL.sendTo(packet, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+		PacketDistributor.sendToPlayer(player, packet);
 	}
 
 	public static void sendBridges(ServerPlayer player) {
-		CHANNEL.sendTo(new Sync(new java.util.ArrayList<>(Bridges.getAll())), player.connection.connection,
-				NetworkDirection.PLAY_TO_CLIENT);
+		PacketDistributor.sendToPlayer(player, new Sync(new java.util.ArrayList<>(Bridges.getAll())));
 	}
 
 	public static void sendBridgesToAll() {
-		CHANNEL.send(PacketDistributor.ALL.noArg(), new Sync(new java.util.ArrayList<>(Bridges.getAll())));
+		PacketDistributor.sendToAllPlayers(new Sync(new java.util.ArrayList<>(Bridges.getAll())));
 	}
 
 	public enum BakePhase {
 		CONFIRM, BAKING, FINISHED, CANCELLED
 	}
 
-	public record BakeStatusPacket(BakePhase phase, ResourceLocation outputId) {
-		public static void encode(BakeStatusPacket msg, FriendlyByteBuf buf) {
-			buf.writeEnum(msg.phase);
-			buf.writeResourceLocation(msg.outputId);
+	public record BakeStatusPacket(BakePhase phase, ResourceLocation outputId) implements CustomPacketPayload {
+		public static final Type<BakeStatusPacket> TYPE = new Type<>(
+				ResourceLocation.fromNamespaceAndPath(CulinaryCompat.MODID, "bake_status"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, BakeStatusPacket> STREAM_CODEC = StreamCodec
+				.of((buf, msg) -> {
+					buf.writeEnum(msg.phase);
+					buf.writeResourceLocation(msg.outputId);
+				}, buf -> new BakeStatusPacket(buf.readEnum(BakePhase.class), buf.readResourceLocation()));
+
+		@Override
+		public Type<BakeStatusPacket> type() {
+			return TYPE;
 		}
 
-		public static BakeStatusPacket decode(FriendlyByteBuf buf) {
-			return new BakeStatusPacket(buf.readEnum(BakePhase.class), buf.readResourceLocation());
-		}
-
-		public static void handle(BakeStatusPacket msg, Supplier<NetworkEvent.Context> ctx) {
-			ctx.get()
-					.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-							() -> () -> io.github.smokahs.culinarycompat.compat.cfb.BakeState.Client.onStatus(msg.phase,
-									msg.outputId)));
-			ctx.get().setPacketHandled(true);
+		public static void handle(BakeStatusPacket msg, IPayloadContext context) {
+			context.enqueueWork(() -> io.github.smokahs.culinarycompat.compat.cfb.BakeState.Client.onStatus(msg.phase,
+					msg.outputId));
 		}
 	}
 }

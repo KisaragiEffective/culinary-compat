@@ -1,13 +1,12 @@
 package io.github.smokahs.culinarycompat.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
 public final class Configs {
 	private Configs() {
 	}

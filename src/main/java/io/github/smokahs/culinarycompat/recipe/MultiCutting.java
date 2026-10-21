@@ -4,22 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 
 import io.github.smokahs.culinarycompat.registry.Recipes;
 
@@ -32,6 +24,8 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 
 	public MultiCutting(ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result) {
 		this.id = id;
+		if (id != null)
+			RecipeIds.remember(id, this);
 		this.ingredients = ingredients;
 		this.result = result;
 	}
@@ -39,7 +33,7 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 	@Override
 	public boolean matches(RecipeWrapper inv, Level level) {
 		List<ItemStack> stored = new ArrayList<>();
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack s = inv.getItem(i);
 			if (!s.isEmpty()) {
 				stored.add(s);
@@ -66,7 +60,7 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 	}
 
 	@Override
-	public ItemStack assemble(RecipeWrapper inv, RegistryAccess registries) {
+	public ItemStack assemble(RecipeWrapper inv, net.minecraft.core.HolderLookup.Provider registries) {
 		return result.copy();
 	}
 
@@ -76,7 +70,7 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 	}
 
 	@Override
-	public ItemStack getResultItem(RegistryAccess registries) {
+	public ItemStack getResultItem(net.minecraft.core.HolderLookup.Provider registries) {
 		return result;
 	}
 
@@ -85,7 +79,6 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 		return ingredients;
 	}
 
-	@Override
 	public ResourceLocation getId() {
 		return id;
 	}
@@ -101,42 +94,43 @@ public class MultiCutting implements Recipe<RecipeWrapper> {
 	}
 
 	public static final class Serializer implements RecipeSerializer<MultiCutting> {
+		private static final com.mojang.serialization.MapCodec<MultiCutting> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder
+				.mapCodec(
+						instance -> instance
+								.group(Ingredient.CODEC_NONEMPTY.listOf()
+										.validate(list -> list.isEmpty() || list.size() > MAX_INPUTS
+												? com.mojang.serialization.DataResult
+														.error(() -> "Expected 1-9 ingredients")
+												: com.mojang.serialization.DataResult.success(list))
+										.fieldOf("ingredients").forGetter(recipe -> recipe.ingredients),
+										ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result))
+								.apply(instance, (ingredients, result) -> {
+									NonNullList<Ingredient> list = NonNullList.create();
+									list.addAll(ingredients);
+									return new MultiCutting(null, list, result);
+								}));
+		private static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, MultiCutting> STREAM_CODEC = net.minecraft.network.codec.StreamCodec
+				.of((buf, recipe) -> {
+					buf.writeVarInt(recipe.ingredients.size());
+					for (Ingredient ingredient : recipe.ingredients)
+						Ingredient.CONTENTS_STREAM_CODEC.encode(buf, ingredient);
+					ItemStack.STREAM_CODEC.encode(buf, recipe.result);
+				}, buf -> {
+					int size = buf.readVarInt();
+					if (size < 1 || size > MAX_INPUTS)
+						throw new IllegalArgumentException("Invalid ingredient count: " + size);
+					NonNullList<Ingredient> list = NonNullList.create();
+					for (int i = 0; i < size; i++)
+						list.add(Ingredient.CONTENTS_STREAM_CODEC.decode(buf));
+					return new MultiCutting(null, list, ItemStack.STREAM_CODEC.decode(buf));
+				});
 		@Override
-		public MultiCutting fromJson(ResourceLocation id, JsonObject json) {
-			JsonArray arr = GsonHelper.getAsJsonArray(json, "ingredients");
-			NonNullList<Ingredient> ings = NonNullList.create();
-			for (int i = 0; i < arr.size(); i++) {
-				Ingredient ing = Ingredient.fromJson(arr.get(i));
-				if (!ing.isEmpty()) {
-					ings.add(ing);
-				}
-			}
-			if (ings.isEmpty() || ings.size() > MAX_INPUTS) {
-				throw new JsonParseException(
-						"multi_cutting recipe must have 1-" + MAX_INPUTS + " ingredients (got " + ings.size() + ")");
-			}
-			ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-			return new MultiCutting(id, ings, result);
+		public com.mojang.serialization.MapCodec<MultiCutting> codec() {
+			return CODEC;
 		}
-
 		@Override
-		public MultiCutting fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-			int n = buf.readVarInt();
-			NonNullList<Ingredient> ings = NonNullList.withSize(n, Ingredient.EMPTY);
-			for (int i = 0; i < n; i++) {
-				ings.set(i, Ingredient.fromNetwork(buf));
-			}
-			ItemStack result = buf.readItem();
-			return new MultiCutting(id, ings, result);
-		}
-
-		@Override
-		public void toNetwork(FriendlyByteBuf buf, MultiCutting recipe) {
-			buf.writeVarInt(recipe.ingredients.size());
-			for (Ingredient ing : recipe.ingredients) {
-				ing.toNetwork(buf);
-			}
-			buf.writeItem(recipe.result);
+		public net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, MultiCutting> streamCodec() {
+			return STREAM_CODEC;
 		}
 	}
 

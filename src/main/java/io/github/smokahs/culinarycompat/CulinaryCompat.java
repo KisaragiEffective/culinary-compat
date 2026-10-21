@@ -1,12 +1,9 @@
 package io.github.smokahs.culinarycompat;
 
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import com.mojang.logging.LogUtils;
 
@@ -30,10 +27,10 @@ public class CulinaryCompat {
 	public static final String MODID = "culinarycompat";
 	public static final Logger LOGGER = LogUtils.getLogger();
 
-	public CulinaryCompat(FMLJavaModLoadingContext context) {
-		IEventBus modEventBus = context.getModEventBus();
+	public CulinaryCompat(IEventBus modEventBus, ModContainer container) {
 
 		Items.ITEMS.register(modEventBus);
+		io.github.smokahs.culinarycompat.registry.Components.COMPONENTS.register(modEventBus);
 		Blocks.BLOCKS.register(modEventBus);
 		Sounds.SOUNDS.register(modEventBus);
 		Recipes.RECIPE_SERIALIZERS.register(modEventBus);
@@ -41,20 +38,16 @@ public class CulinaryCompat {
 		LootFunctions.LOOT_FUNCTIONS.register(modEventBus);
 
 		modEventBus.addListener(DepCheck::onCommonSetup);
-		modEventBus.addListener(FoodNerf::onCommonSetup);
-		modEventBus.addListener(CulinaryCompat::onCommonSetup);
+		modEventBus.addListener(FoodNerf::modifyComponents);
+		modEventBus.addListener(Network::register);
 		modEventBus.addListener(OverridePack::onAddPackFinders);
 
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Configs.Common.SPEC);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Configs.Client.SPEC);
+		container.registerConfig(ModConfig.Type.STARTUP, Configs.Common.SPEC, "culinarycompat-common.toml");
+		container.registerConfig(ModConfig.Type.CLIENT, Configs.Client.SPEC);
 
 		CFB.init(modEventBus);
 		Bridge.init(modEventBus);
 
-		NeoForge.EVENT_BUS.register(this);
 	}
 
-	private static void onCommonSetup(FMLCommonSetupEvent event) {
-		Network.register();
-	}
 }

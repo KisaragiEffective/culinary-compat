@@ -1,28 +1,26 @@
 package io.github.smokahs.culinarycompat.datagen;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 
 import org.jetbrains.annotations.Nullable;
 
 import io.github.smokahs.culinarycompat.CulinaryCompat;
 
-@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@net.neoforged.fml.common.EventBusSubscriber(modid = CulinaryCompat.MODID, bus = net.neoforged.fml.common.EventBusSubscriber.Bus.MOD)
 public final class DataGenerators {
 	private DataGenerators() {
 	}
@@ -38,7 +36,7 @@ public final class DataGenerators {
 		generator.addProvider(event.includeServer(), blockTags);
 		generator.addProvider(event.includeServer(),
 				new ItemTags(packOutput, lookupProvider, blockTags.contentsGetter(), existingFileHelper));
-		generator.addProvider(event.includeServer(), new Recipes(packOutput));
+		generator.addProvider(event.includeServer(), new Recipes(packOutput, lookupProvider));
 
 		generator.addProvider(event.includeClient(), new Lang(packOutput));
 	}
@@ -77,12 +75,12 @@ public final class DataGenerators {
 	}
 
 	static final class Recipes extends RecipeProvider {
-		Recipes(PackOutput packOutput) {
-			super(packOutput);
+		Recipes(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> provider) {
+			super(packOutput, provider);
 		}
 
 		@Override
-		protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+		protected void buildRecipes(RecipeOutput consumer) {
 		}
 	}
 }
