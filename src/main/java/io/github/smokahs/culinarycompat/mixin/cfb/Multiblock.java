@@ -34,7 +34,10 @@ public abstract class Multiblock implements CFB.KitchenMemberView {
 	private final Set<ResourceLocation> culinarycompat$members = new HashSet<>();
 	@Inject(method = "findNeighbourCraftingBlocks", at = @At("HEAD"))
 	private void culinarycompat$record(Level level, BlockPos pos, boolean extended, CallbackInfo ci) {
-		culinarycompat$members.add(BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()));
+		var state = level.getBlockState(pos);
+		if (!state.isAir()) {
+			culinarycompat$members.add(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+		}
 		for (Direction direction : Direction.values()) {
 			var id = BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos.relative(direction)).getBlock());
 			if (Set.of("culinarycompat", "farmersdelight", "endersdelight", "ends_delight", "mynethersdelight",
